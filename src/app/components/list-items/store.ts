@@ -21,27 +21,31 @@ import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 })
 export class ItemsStateService {
   private stateItems = signal<ItemsState>({
-    loading: true,
+    loaded: false,
     items: [],
   });
   state = computed(() => this.stateItems());
   items = computed(() => this.stateItems().items);
+  loaded = computed(() => this.stateItems().loaded);
   getList = new Subject<Subscriber<any>>();
   itemAdd = new Subject<Omit<ItemModel, 'id'>>();
   itemStateUpdate = new Subject<ItemUpdateSubjectData>();
   constructor(private apiServiceItems: APIServiceItems) {
 
     effect(() => {
-      console.log('effect apiServiceItems.putList', this.stateItems().items);
-      this.apiServiceItems.putList(this.stateItems().items).subscribe();
+      if(this.loaded()){
+        console.log('effect apiServiceItems.putList', this.stateItems().items);
+        this.apiServiceItems.putList(this.stateItems().items).subscribe();
+      }
     });
 
     this.getList.subscribe(subscription => {
       this.apiServiceItems.getList().subscribe(
         result => {
-          this.stateItems.update(() => {
+          this.stateItems.update(state => {
             return {
-              loading: false,
+              ...state,
+              loaded: true,
               items: result as ItemState[]
             }
           });
@@ -114,7 +118,7 @@ export class ItemsStateService {
               catchError((error) => {
                 if (itemStateSubjectData.itemStateReference) {
                   itemStateSubjectData.itemStateReference.loading = false;
-                  itemStateSubjectData.itemStateReference.error = error;
+                  itemStateSubjectData.itemStateReference.error = error.message;
                   this.stateItems.update((state) => ({ ...state }));
                 }
 
@@ -153,7 +157,7 @@ export class ItemsStateService {
 }
 
 export interface ItemsState {
-  loading: boolean;
+  loaded: boolean;
   items: ItemState[];
 }
 

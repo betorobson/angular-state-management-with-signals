@@ -5,6 +5,7 @@ import { MatCard } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { ItemsStateService, ItemState } from './store';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'item',
@@ -17,7 +18,7 @@ import { ItemsStateService, ItemState } from './store';
     }@else{
       <div>desc: {{item.desc}}</div>
       @if(item.loading){
-        loading...
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       } @else {
         <button (click)="edit()">Edit</button>
         @if(item.error){
@@ -44,6 +45,7 @@ import { ItemsStateService, ItemState } from './store';
     MatInputModule,
     MatSelectModule,
     MatCard,
+    MatProgressBarModule
   ],
 })
 export class ItemComponent {

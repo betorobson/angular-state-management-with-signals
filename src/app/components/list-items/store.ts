@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import {
   Subject,
   switchMap,
@@ -21,13 +21,42 @@ import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 })
 export class ItemsStateService {
   private stateItems = signal<ItemsState>({
+    loading: true,
     items: [],
   });
   state = computed(() => this.stateItems());
   items = computed(() => this.stateItems().items);
+  getList = new Subject<Subscriber<any>>();
   itemAdd = new Subject<Omit<ItemModel, 'id'>>();
   itemStateUpdate = new Subject<ItemUpdateSubjectData>();
   constructor(private apiServiceItems: APIServiceItems) {
+
+    effect(() => {
+      console.log('effect apiServiceItems.putList', this.stateItems().items);
+      this.apiServiceItems.putList(this.stateItems().items).subscribe();
+    });
+
+    this.getList.subscribe(subscription => {
+      this.apiServiceItems.getList().subscribe(
+        result => {
+          this.stateItems.update(() => {
+            return {
+              loading: false,
+              items: result as ItemState[]
+            }
+          });
+          subscription.next(true);
+          subscription.complete();
+        },
+        error => {
+          subscription.error(error);
+          subscription.complete();
+        }
+      )
+    });
+
+    this.load().subscribe();
+
     this.itemAdd.subscribe((item) => {
       return this.stateItems.update((state) => {
         state.items.push({
@@ -66,7 +95,7 @@ export class ItemsStateService {
         mergeMap((itemStateSubjectData) => {
           console.log('mergeMap', itemStateSubjectData);
           return this.apiServiceItems
-            .patch({
+            .patchItem({
               id: itemStateSubjectData.itemUpdate.id,
               ...itemStateSubjectData.itemUpdate.itemProperties,
             })
@@ -74,7 +103,7 @@ export class ItemsStateService {
               map((result) => {
                 if (itemStateSubjectData.itemStateReference) {
                   Object.assign(itemStateSubjectData.itemStateReference, {
-                    ...result.body,
+                    ...result,
                     loading: false,
                     error: null,
                   });
@@ -114,9 +143,17 @@ export class ItemsStateService {
       });
     });
   }
+
+  load() {
+    return new Observable((subscriber) => {
+      this.getList.next(subscriber);
+    });
+  }
+
 }
 
 export interface ItemsState {
+  loading: boolean;
   items: ItemState[];
 }
 

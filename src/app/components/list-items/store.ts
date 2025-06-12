@@ -116,6 +116,13 @@ export class ItemsStateService {
     });
   }
 
+  private pipeSetItemLoading(itemStateSubjectData: ItemUpdateSubjectData) {
+    if (itemStateSubjectData.itemStateReference) {
+      itemStateSubjectData.itemStateReference.loading = true;
+      this.stateItems.update((state) => ({ ...state }));
+    }
+  }
+
   private subscriberItemStateUpdate(){
     this.itemStateUpdate
       .pipe(
@@ -132,12 +139,7 @@ export class ItemsStateService {
         ),
 
         // set item loading
-        tap((itemStateSubjectData) => {
-          if (itemStateSubjectData.itemStateReference) {
-            itemStateSubjectData.itemStateReference.loading = true;
-            this.stateItems.update((state) => ({ ...state }));
-          }
-        }),
+        tap(itemStateSubjectData => this.pipeSetItemLoading(itemStateSubjectData)),
 
         // push update to API
         mergeMap((itemStateSubjectData) => {

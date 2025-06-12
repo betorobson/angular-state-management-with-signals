@@ -52,11 +52,11 @@ import { ItemsStateService } from './store';
   ],
 })
 export class ListItems {
-  loaded = computed(() => this.itemsStateService.state().loaded);
-  items = computed(() => this.itemsStateService.state().items);
+  loaded = computed(() => this.itemsStateService.getState().loaded);
+  items = computed(() => this.itemsStateService.getState().items);
   filteredItems = computed(() => {
     const reg = new RegExp(this.filterQuery(), 'gi');
-    return this.itemsStateService.state().items.filter((item) => {
+    return this.itemsStateService.getState().items.filter((item) => {
       reg.lastIndex = -1;
       return reg.test(item.desc);
     });
@@ -83,7 +83,7 @@ export class ListItems {
   }
 
   add(desc: string) {
-    this.itemsStateService.itemAdd.next({
+    this.itemsStateService.itemAdd({
       desc,
     });
   }

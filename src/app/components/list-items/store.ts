@@ -20,29 +20,63 @@ import { APIServiceItems, ItemModel } from '../../api-services/items.service';
   providedIn: 'root',
 })
 export class ItemsStateService {
+
   private stateItems = signal<ItemsState>({
     loaded: false,
     items: [],
   });
-  state = computed(() => this.stateItems());
-  items = computed(() => this.stateItems().items);
-  getList = new Subject<Subscriber<any>>();
-  itemAdd = new Subject<Omit<ItemModel, 'id'>>();
-  itemStateUpdate = new Subject<ItemUpdateSubjectData>();
+
+  getState = computed(() => this.stateItems());
+
+  private getList = new Subject<Subscriber<any>>();
+  private itemStateAdd = new Subject<Omit<ItemModel, 'id'>>();
+  private itemStateUpdate = new Subject<ItemUpdateSubjectData>();
 
   private apiServiceItems = inject(APIServiceItems) ;
-  initialRun = false;
+  private initialRun = false;
 
   constructor() {
 
+    this.effectPutList();
+
+    this.subscriberGetList();
+    this.subscriberItemAdd();
+    this.subscriberItemStateUpdate();
+
+    this.load().subscribe();
+
+  }
+
+  private load() {
+    return new Observable((subscriber) => {
+      this.getList.next(subscriber);
+    });
+  }
+
+  private effectPutList(){
     effect(() => {
       if(this.stateItems() && this.initialRun){
         console.log('effect apiServiceItems.putList', this.stateItems().items);
         this.apiServiceItems.putList(this.stateItems().items).subscribe();
       }
-      this.initialRun = true;
+      this.initialRun = this.stateItems().loaded;
     });
+  }
 
+  itemAdd(item: Omit<ItemModel, 'id'>) {
+    this.itemStateAdd.next(item);
+  }
+
+  itemUpdate(updatedItem: ItemUpdate) {
+    return new Observable((subscriber) => {
+      this.itemStateUpdate.next({
+        subscriber,
+        itemUpdate: updatedItem,
+      });
+    });
+  }
+
+  private subscriberGetList(){
     this.getList.subscribe(subscription => {
       this.apiServiceItems.getList().subscribe(
         result => {
@@ -64,10 +98,10 @@ export class ItemsStateService {
         }
       )
     });
+  }
 
-    this.load().subscribe();
-
-    this.itemAdd.subscribe((item) => {
+  private subscriberItemAdd(){
+    this.itemStateAdd.subscribe((item) => {
       return this.stateItems.update((state) => {
         state.items.push({
           loading: false,
@@ -80,7 +114,9 @@ export class ItemsStateService {
         };
       });
     });
+  }
 
+  private subscriberItemStateUpdate(){
     this.itemStateUpdate
       .pipe(
 
@@ -145,21 +181,6 @@ export class ItemsStateService {
         itemStateSubjectData.subscriber.next(itemStateSubjectData);
         itemStateSubjectData.subscriber.complete();
       });
-  }
-
-  itemUpdate(updatedItem: ItemUpdate) {
-    return new Observable((subscriber) => {
-      this.itemStateUpdate.next({
-        subscriber,
-        itemUpdate: updatedItem,
-      });
-    });
-  }
-
-  load() {
-    return new Observable((subscriber) => {
-      this.getList.next(subscriber);
-    });
   }
 
 }

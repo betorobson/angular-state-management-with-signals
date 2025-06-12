@@ -26,17 +26,19 @@ export class ItemsStateService {
   });
   state = computed(() => this.stateItems());
   items = computed(() => this.stateItems().items);
-  loaded = computed(() => this.stateItems().loaded);
   getList = new Subject<Subscriber<any>>();
   itemAdd = new Subject<Omit<ItemModel, 'id'>>();
   itemStateUpdate = new Subject<ItemUpdateSubjectData>();
   constructor(private apiServiceItems: APIServiceItems) {
 
+    let initialRun = false;
+
     effect(() => {
-      if(this.loaded()){
+      if(this.stateItems() && initialRun){
         console.log('effect apiServiceItems.putList', this.stateItems().items);
         this.apiServiceItems.putList(this.stateItems().items).subscribe();
       }
+      initialRun = true;
     });
 
     this.getList.subscribe(subscription => {

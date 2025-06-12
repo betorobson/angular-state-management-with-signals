@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import {
   Subject,
   switchMap,
@@ -29,16 +29,18 @@ export class ItemsStateService {
   getList = new Subject<Subscriber<any>>();
   itemAdd = new Subject<Omit<ItemModel, 'id'>>();
   itemStateUpdate = new Subject<ItemUpdateSubjectData>();
-  constructor(private apiServiceItems: APIServiceItems) {
 
-    let initialRun = false;
+  private apiServiceItems = inject(APIServiceItems) ;
+  initialRun = false;
+
+  constructor() {
 
     effect(() => {
-      if(this.stateItems() && initialRun){
+      if(this.stateItems() && this.initialRun){
         console.log('effect apiServiceItems.putList', this.stateItems().items);
         this.apiServiceItems.putList(this.stateItems().items).subscribe();
       }
-      initialRun = true;
+      this.initialRun = true;
     });
 
     this.getList.subscribe(subscription => {
@@ -48,7 +50,9 @@ export class ItemsStateService {
             return {
               ...state,
               loaded: true,
-              items: result as ItemState[]
+              items: (result as ItemState[]).map(
+                item => ({...item, loading: false})
+              )
             }
           });
           subscription.next(true);
@@ -79,6 +83,8 @@ export class ItemsStateService {
 
     this.itemStateUpdate
       .pipe(
+
+        takeUntilDestroyed(),
 
         // set item state reference
         tap(
@@ -129,8 +135,8 @@ export class ItemsStateService {
                 return of(itemStateSubjectData);
               })
             );
-        }),
-        takeUntilDestroyed()
+        })
+
       )
 
       // complete subscribe

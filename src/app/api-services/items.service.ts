@@ -22,7 +22,7 @@ export class APIServiceItems {
         }
         subscriber.complete();
       }
-    );
+    ).pipe(delay(1500));
   }
 
   putList(items: ItemModel[]){
@@ -42,7 +42,6 @@ export class APIServiceItems {
   }
 
   patchItem(item: ItemModel) {
-    console.log('patch item', item);
     return of(item).pipe(
       delay(1000),
       map((result) => {

@@ -9,32 +9,38 @@ import { ItemsStateService } from './store';
 @Component({
   selector: 'list-items',
   template: `
-    <input type="text" #iptDesc /><button type="button" (click)="add(iptDesc.value)">Add</button>
-    <hr />
-    <div style="display: flex; flex-direction: row">
+    @if(!loaded()){
+      loading...
+    }@else{
       <div>
-        @for(item of items(); track $index){
-          <item [item]="item"></item>
-        }
-        <pre>{{items() | json}}</pre>
+        <input type="text" #iptDesc /><button type="button" (click)="add(iptDesc.value)">Add</button>
+        <hr />
       </div>
-      <div style="margin-left: 16px;">
-        <div style="display: flex; flex-direction: row">
-          <input [value]="this.filterQuery()" (ngOnChange)="setFilter(iptfilter.value)" #iptfilter /><button (click)="setFilter(iptfilter.value)">Filtrar</button>
+      <div style="display: flex; flex-direction: row">
+        <div>
+          @for(item of items(); track $index){
+            <item [item]="item"></item>
+          }
+          <pre>{{items() | json}}</pre>
         </div>
-        @for(item of filteredItems(); track $index){
-          <item [item]="item"></item>
-        }
-        <!-- <pre>{{filteredItems() | json}}</pre> -->
-        <!-- <pre>{{mudouOFiltro() | json}}</pre> -->
+        <div style="margin-left: 16px;">
+          <div style="display: flex; flex-direction: row">
+            <input [value]="this.filterQuery()" (ngOnChange)="setFilter(iptfilter.value)" #iptfilter /><button (click)="setFilter(iptfilter.value)">Filtrar</button>
+          </div>
+          @for(item of filteredItems(); track $index){
+            <item [item]="item"></item>
+          }
+          <!-- <pre>{{filteredItems() | json}}</pre> -->
+          <!-- <pre>{{mudouOFiltro() | json}}</pre> -->
+        </div>
       </div>
-    </div>
+    }
   `,
   styles: `
     :host {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: normal;
     }
   `,
   imports: [
@@ -46,7 +52,8 @@ import { ItemsStateService } from './store';
   ],
 })
 export class ListItems {
-  items = computed(() => this.itemsStateService.items());
+  loaded = computed(() => this.itemsStateService.state().loaded);
+  items = computed(() => this.itemsStateService.state().items);
   filteredItems = computed(() => {
     const reg = new RegExp(this.filterQuery(), 'gi');
     return this.itemsStateService.state().items.filter((item) => {
@@ -63,16 +70,16 @@ export class ListItems {
   // });
 
   constructor(private itemsStateService: ItemsStateService) {
-    effect(() => {
-      if (this.itemsStateService.state()) {
-        console.log('effect itemsStateService.items()');
-      }
-    });
-    effect(() => {
-      if (this.filterQuery()) {
-        console.log('effect this.filterQuery()');
-      }
-    });
+    // effect(() => {
+    //   if (this.itemsStateService.state()) {
+    //     console.log('effect itemsStateService.items()');
+    //   }
+    // });
+    // effect(() => {
+    //   if (this.filterQuery()) {
+    //     console.log('effect this.filterQuery()');
+    //   }
+    // });
   }
 
   add(desc: string) {

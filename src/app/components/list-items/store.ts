@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { Injectable, signal, computed, effect, inject, untracked} from '@angular/core';
 import {
   Subject,
   switchMap,
@@ -12,6 +12,7 @@ import {
   delay,
   concatMap,
   mergeMap,
+  take,
 } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
@@ -39,19 +40,19 @@ export class ItemsStateService {
 
     this.effectPutList();
 
-    this.subscriberGetList();
+    // this.subscriberGetList();
     this.subscriberItemAdd();
     this.subscriberItemStateUpdate();
 
-    this.load().subscribe();
+    // this.load().subscribe();
 
   }
 
-  private load() {
-    return new Observable((subscriber) => {
-      this.getList.next(subscriber);
-    });
-  }
+  // private load() {
+  //   return new Observable((subscriber) => {
+  //     this.getList.next(subscriber);
+  //   });
+  // }
 
   private effectPutList(){
     effect(() => {
@@ -76,9 +77,17 @@ export class ItemsStateService {
     });
   }
 
-  private subscriberGetList(){
-    this.getList.subscribe(subscription => {
-      this.apiServiceItems.getList().subscribe(
+  load(){
+    this.initialRun = false;
+    this.stateItems.update(state => {
+      return {
+        ...state,
+        loaded: false,
+        items: []
+      }
+    });
+    // this.getList.subscribe(subscription => {
+      this.apiServiceItems.getList().pipe(take(1)).subscribe(
         result => {
           this.stateItems.update(state => {
             return {
@@ -89,15 +98,15 @@ export class ItemsStateService {
               )
             }
           });
-          subscription.next(true);
-          subscription.complete();
+          // subscription.next(true);
+          // subscription.complete();
         },
         error => {
-          subscription.error(error);
-          subscription.complete();
+          // subscription.error(error);
+          // subscription.complete();
         }
       )
-    });
+    // });
   }
 
   private subscriberItemAdd(){

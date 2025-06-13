@@ -1,4 +1,4 @@
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, effect, OnInit, signal } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,7 +13,9 @@ import { ItemsStateService } from './store';
       loading...
     }@else{
       <div>
-        <input type="text" #iptDesc /><button type="button" (click)="add(iptDesc.value)">Add</button>
+        <input type="text" #iptDesc />
+        <button type="button" (click)="add(iptDesc.value)">Add</button>
+        <button type="button" (click)="load()">Load</button>
         <hr />
       </div>
       <div style="display: flex; flex-direction: row">
@@ -51,7 +53,7 @@ import { ItemsStateService } from './store';
     ItemComponent,
   ],
 })
-export class ListItems {
+export class ListItems implements OnInit {
   loaded = computed(() => this.itemsStateService.getState().loaded);
   items = computed(() => this.itemsStateService.getState().items);
   filteredItems = computed(() => {
@@ -80,6 +82,13 @@ export class ListItems {
     //     console.log('effect this.filterQuery()');
     //   }
     // });
+  }
+  ngOnInit(): void {
+    this.load();
+  }
+
+  load(){
+    this.itemsStateService.load();
   }
 
   add(desc: string) {

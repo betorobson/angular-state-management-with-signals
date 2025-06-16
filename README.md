@@ -65,3 +65,4 @@ https://sergeygultyayev.medium.com/5-mistakes-developers-make-when-using-signals
 https://angular.love/breakthrough-in-state-management-discover-the-simplicity-of-signal-store-part-1
 https://medium.com/strands-tech-corner/reduce-boilerplate-with-redux-toolkit-d56047455d63
 https://javascript.plainenglish.io/common-terms-in-ngrx-and-state-management-for-angular-beginners-c03e49e140bc
+https://blog.flotes.app/posts/angular-fine-grain-reactivity

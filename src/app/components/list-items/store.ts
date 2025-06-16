@@ -68,12 +68,18 @@ export class ItemsStateService {
     this.itemStateAdd.next(item);
   }
 
+  // itemUpdate(updatedItem: ItemUpdate) {
+  //   return new Observable((subscriber) => {
+  //     this.itemStateUpdate.next({
+  //       subscriber,
+  //       itemUpdate: updatedItem,
+  //     });
+  //   });
+  // }
+
   itemUpdate(updatedItem: ItemUpdate) {
-    return new Observable((subscriber) => {
-      this.itemStateUpdate.next({
-        subscriber,
-        itemUpdate: updatedItem,
-      });
+    this.itemStateUpdate.next({
+      itemUpdate: updatedItem,
     });
   }
 
@@ -177,7 +183,7 @@ export class ItemsStateService {
                   this.stateItems.update((state) => ({ ...state }));
                 }
 
-                itemStateSubjectData.subscriber.error(error);
+                // itemStateSubjectData.subscriber.error(error);
 
                 return of(itemStateSubjectData);
               })
@@ -189,8 +195,8 @@ export class ItemsStateService {
       // complete subscribe
       .subscribe((itemStateSubjectData) => {
         console.log('result', itemStateSubjectData);
-        itemStateSubjectData.subscriber.next(itemStateSubjectData);
-        itemStateSubjectData.subscriber.complete();
+        // itemStateSubjectData.subscriber.next(itemStateSubjectData);
+        // itemStateSubjectData.subscriber.complete();
       });
   }
 
@@ -214,5 +220,5 @@ export interface ItemUpdate {
 export interface ItemUpdateSubjectData {
   itemUpdate: ItemUpdate;
   itemStateReference?: ItemState;
-  subscriber: Subscriber<any>;
+  // subscriber: Subscriber<any>;
 }

@@ -63,10 +63,10 @@ export class ItemComponent {
         id: this.item.id,
         itemProperties: { desc },
       })
-      .subscribe(
-        (result) => console.log('result in subs', result),
-        (error) => console.log('error in subs', error)
-      );
+      // .subscribe(
+      //   (result) => console.log('result in subs', result),
+      //   (error) => console.log('error in subs', error)
+      // );
   }
 }
 

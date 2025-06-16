@@ -57,3 +57,11 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+## References
+https://modernangular.com/articles/state-management-with-rxjs-and-signals
+https://sergeygultyayev.medium.com/5-mistakes-developers-make-when-using-signals-in-angular-159dee1a0b26
+https://angular.love/breakthrough-in-state-management-discover-the-simplicity-of-signal-store-part-1
+https://medium.com/strands-tech-corner/reduce-boilerplate-with-redux-toolkit-d56047455d63
+https://javascript.plainenglish.io/common-terms-in-ngrx-and-state-management-for-angular-beginners-c03e49e140bc

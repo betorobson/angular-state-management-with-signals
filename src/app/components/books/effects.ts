@@ -30,29 +30,27 @@ export class StateBooksServiceEffects {
 
   private effects: Effects = {
 
-    [EffectsNames.ADD_ENTITY]: [
+    [EffectsNames.ADD_ENTITY]: entity => {
+      return entity.pipe(
 
-      (entity) => {
-          console.log('observableEntity 1', entity);
-      },
+          delay(1000),
 
-      (entity) => {
-          if(/bob/.test(entity.title)) throw new Error('Bob is not an allowed world in book title')
-          console.log('observableEntity 2', entity);
-      },
+          tap(entity => {
+            if(/bob/.test(entity.title)) throw new Error('Bob is not an allowed world in book title')
+            console.log('observableEntity 2', entity);
+          })
 
-      (entity) => {
-          console.log('observableEntity 3', entity);
-      },
+      );
+    },
 
-    ],
-
-    [EffectsNames.ADD_ENTITY_SUCCESS]: [
-
-      // UPDATE Parent State
-      (entity) => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)
-
-    ]
+    [EffectsNames.ADD_ENTITY_SUCCESS]: (entity) => {
+      return entity.pipe(
+        // UPDATE Parent State
+        tap(entity => {
+          this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)
+        })
+      )
+    }
 
   }
 
@@ -60,21 +58,17 @@ export class StateBooksServiceEffects {
     name: EffectsNames,
     entity: Observable<BooksModel>
   ){
-    return entity.pipe(
-      tap(entity => {
-        if(this.effects[name]){
-          this.effects[name].forEach(
-            effectFunction => effectFunction(entity)
-          )
-        }
-      })
-    )
+      if(this.effects[name]){
+        return this.effects[name](entity);
+      }else{
+        return entity;
+      }
   }
 
 }
 
 type Effects = {
-  [effectName in EffectsNames]?: Array<(entity: BooksModel) => void>;
+  [effectName in EffectsNames]?: (entity: Observable<BooksModel>) => Observable<BooksModel>;
 }
 
 export enum EffectsNames {

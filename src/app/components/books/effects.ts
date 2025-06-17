@@ -50,6 +50,18 @@ export class StateBooksServiceEffects {
           this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)
         })
       )
+    },
+
+    [EffectsNames.UPDATE_ENTITY]: (entity) => {
+      return entity.pipe(
+        delay(300),
+        // Validation
+        tap(entity => {
+          if(entity.rating > 10 || entity.rating < 0){
+            throw new Error('Rating value must be between 0 and 10');
+          }
+        })
+      )
     }
 
   }
@@ -75,4 +87,5 @@ export enum EffectsNames {
   ADD_ENTITY,
   ADD_ENTITY_SUCCESS,
   ADD_ENTITY_ERROR,
+  UPDATE_ENTITY
 }

@@ -34,9 +34,11 @@ export class StateBooksServiceStore {
   constructor(){
 
     ///////////////////// LISTENERS REDUCERS
-    this.dispatchReducers.addEntity.subscribe(entity => this.reducers.addEntity(entity))
+    this.dispatchReducers.addEntity.subscribe(
+      entity => this.reducers.addEntity(entity)
+    )
 
-    this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
+    this.dispatchReducers.updateEntity.subscribe(
       entity => this.reducers.updateEntity(entity)
     );
 
@@ -93,7 +95,15 @@ export class StateBooksServiceStore {
   }
 
   updateBook(book: BooksModel){
-    this.dispatchReducers.updateEntity.next(book);
+    this.effects.updateEntity(book)
+      .subscribe(
+        () => {
+          this.dispatchReducers.updateEntity.next(book);
+        },
+        error => {
+          console.log('updateBook', error);
+        }
+      )
   }
 
   ///////////////////// EFFECTS
@@ -114,6 +124,11 @@ export class StateBooksServiceStore {
       EffectsNames.ADD_ENTITY_ERROR,
       of(entity)
     ).subscribe(),
+
+    updateEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+      EffectsNames.UPDATE_ENTITY,
+      of(entity)
+    ),
 
   }
 

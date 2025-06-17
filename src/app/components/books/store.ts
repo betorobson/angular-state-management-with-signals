@@ -34,32 +34,23 @@ export class StateBooksServiceStore {
   constructor(){
 
     ///////////////////// LISTENERS REDUCERS
-    this.dispatchReducers.addEntity
-    .pipe(
-      takeUntilDestroyed(),
-      tap(entity => {
-        if(entity.authorId === '1') throw new Error('Invalid ID')
-      }),
-      tap(entity => {
-        console.log('reducers.addEntity', entity);
-        this.reducers.addEntity(entity)
-      }),
-      catchError((error, caght) => {
-        console.log(error);
-        return caght;
-      })
-    )
-    .subscribe(
-      entity => this.effects.addEntity(entity)
-    );
+    this.dispatchReducers.addEntity.subscribe(entity => this.reducers.addEntity(entity))
 
     this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
       entity => this.reducers.updateEntity(entity)
     );
 
     ///////////////////// LISTENERS EFFECTS
-    this.dispatchEffects.addEntity.subscribe(
-      entity => this.effects.addEntity(entity)
+    // this.dispatchEffects.addEntity.subscribe(
+    //   entity => this.effects.addEntity(entity)
+    // );
+
+    this.dispatchEffects.addEntity_success.subscribe(
+      entity => this.effects.addEntity_success(entity)
+    );
+
+    this.dispatchEffects.addEntity_error.subscribe(
+      entity => this.effects.addEntity_error(entity)
     );
 
     // this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
@@ -97,15 +88,6 @@ export class StateBooksServiceStore {
     }
   }
 
-  ///////////////////// EFFECTS
-  private effects = {
-    addEntity: (book: BooksModel) => {
-      this.stateAuthorsServiceStore.updateTotalBooks(book.authorId);
-    },
-    updateEntity: (book: BooksModel) => {
-    }
-  }
-
   private dispatchReducers = {
     addEntity: new Subject<BooksModel>,
     updateEntity: new Subject<BooksModel>,
@@ -114,17 +96,42 @@ export class StateBooksServiceStore {
   ///////////////////// ACTIONS
 
   addBook(book: BooksModel){
-    this.dispatchReducers.addEntity.next(book);
+    this.effects.addEntity(book)
+      .subscribe(
+        () => {
+          this.dispatchReducers.addEntity.next(book);
+          this.dispatchEffects.addEntity_success.next(book);
+        },
+        error => {
+          this.dispatchEffects.addEntity_error.next(book);
+        }
+      )
   }
 
   updateBook(book: BooksModel){
     this.dispatchReducers.updateEntity.next(book);
   }
 
-  ///////////////////// DISPATCH EFFECTS
+  ///////////////////// EFFECTS
 
   private dispatchEffects = {
     addEntity: new Subject<BooksModel>,
+    addEntity_success: new Subject<BooksModel>,
+    addEntity_error: new Subject<BooksModel>,
+    updateEntity: new Subject<BooksModel>,
+  }
+
+  private effects = {
+    addEntity: (entity: BooksModel) => of(entity)
+      .pipe(
+        // takeUntilDestroyed(),
+        tap(entity => {
+          if(entity.authorId === '1') throw new Error('Invalid ID')
+        }),
+        // catchError((error, caght) => error)
+      ),
+    addEntity_success: (entity: BooksModel) => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId),
+    addEntity_error: (entity: BooksModel) => console.log('error', entity),
     updateEntity: new Subject<BooksModel>,
   }
 

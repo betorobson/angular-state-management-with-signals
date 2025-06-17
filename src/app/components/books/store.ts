@@ -33,13 +33,38 @@ export class StateBooksServiceStore {
 
   constructor(){
 
-    this.dispatchReducers.addEntity.subscribe(
-      entity => this.reducers.addEntity(entity)
+    ///////////////////// LISTENERS REDUCERS
+    this.dispatchReducers.addEntity
+    .pipe(
+      takeUntilDestroyed(),
+      tap(entity => {
+        if(entity.authorId === '1') throw new Error('Invalid ID')
+      }),
+      tap(entity => {
+        console.log('reducers.addEntity', entity);
+        this.reducers.addEntity(entity)
+      }),
+      catchError((error, caght) => {
+        console.log(error);
+        return caght;
+      })
+    )
+    .subscribe(
+      entity => this.effects.addEntity(entity)
     );
 
     this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
       entity => this.reducers.updateEntity(entity)
     );
+
+    ///////////////////// LISTENERS EFFECTS
+    this.dispatchEffects.addEntity.subscribe(
+      entity => this.effects.addEntity(entity)
+    );
+
+    // this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
+    //   entity => this.reducers.updateEntity(entity)
+    // );
 
   }
 
@@ -58,8 +83,6 @@ export class StateBooksServiceStore {
           entities: {...state.entities, [book.id]: book}
         })
       )
-      // [todo] padronizar os side effects
-      this.stateAuthorsServiceStore.updateTotalBooks(book.authorId);
     },
     updateEntity: (book: BooksModel) => {
       this.STATE.update(
@@ -71,6 +94,15 @@ export class StateBooksServiceStore {
           }
         })
       )
+    }
+  }
+
+  ///////////////////// EFFECTS
+  private effects = {
+    addEntity: (book: BooksModel) => {
+      this.stateAuthorsServiceStore.updateTotalBooks(book.authorId);
+    },
+    updateEntity: (book: BooksModel) => {
     }
   }
 
@@ -87,6 +119,13 @@ export class StateBooksServiceStore {
 
   updateBook(book: BooksModel){
     this.dispatchReducers.updateEntity.next(book);
+  }
+
+  ///////////////////// DISPATCH EFFECTS
+
+  private dispatchEffects = {
+    addEntity: new Subject<BooksModel>,
+    updateEntity: new Subject<BooksModel>,
   }
 
 }

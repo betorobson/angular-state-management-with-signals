@@ -45,13 +45,13 @@ export class StateBooksServiceStore {
     //   entity => this.effects.addEntity(entity)
     // );
 
-    this.dispatchEffects.addEntity_success.subscribe(
-      entity => this.effects.addEntity_success(entity)
-    );
+    // this.dispatchEffects.addEntity_success.subscribe(
+    //   entity => this.effects.addEntity_success(entity)
+    // );
 
-    this.dispatchEffects.addEntity_error.subscribe(
-      entity => this.effects.addEntity_error(entity)
-    );
+    // this.dispatchEffects.addEntity_error.subscribe(
+    //   entity => this.effects.addEntity_error(entity)
+    // );
 
     // this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
     //   entity => this.reducers.updateEntity(entity)
@@ -100,10 +100,10 @@ export class StateBooksServiceStore {
       .subscribe(
         () => {
           this.dispatchReducers.addEntity.next(book);
-          this.dispatchEffects.addEntity_success.next(book);
+          this.effects.addEntity_success(book);
         },
         error => {
-          this.dispatchEffects.addEntity_error.next(book);
+          this.effects.addEntity_error(book, error);
         }
       )
   }
@@ -114,27 +114,39 @@ export class StateBooksServiceStore {
 
   ///////////////////// EFFECTS
 
-  private dispatchEffects = {
-    addEntity: new Subject<BooksModel>,
-    addEntity_success: new Subject<BooksModel>,
-    addEntity_error: new Subject<BooksModel>,
-    updateEntity: new Subject<BooksModel>,
-  }
+  // private dispatchEffects = {
+  //   addEntity: new Subject<BooksModel>,
+  //   addEntity_success: new Subject<BooksModel>,
+  //   addEntity_error: new Subject<BooksModel>,
+  //   updateEntity: new Subject<BooksModel>,
+  // }
 
   private effects = {
     addEntity: (entity: BooksModel) => of(entity)
       .pipe(
         // takeUntilDestroyed(),
         tap(entity => {
-          if(entity.authorId === '1') throw new Error('Invalid ID')
+          // if(entity.authorId === '1') throw new Error('Invalid ID')
         }),
         // catchError((error, caght) => error)
       ),
-    addEntity_success: (entity: BooksModel) => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId),
-    addEntity_error: (entity: BooksModel) => console.log('error', entity),
+    addEntity_success: (entity: BooksModel) => {
+      const obs = of(entity);
+      obs.pipe(tap(x => console.log(x)))
+      // .pipe(tap(entity => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)))
+      obs.subscribe()
+    },
+    addEntity_error: (entity: BooksModel, error: ErrorEvent) => of(entity)
+      .pipe(tap(entity => console.log('error', entity, error)))
+      .subscribe(),
     updateEntity: new Subject<BooksModel>,
   }
 
+}
+
+function testAddPipe(obs: Observable<BooksModel>){
+  obs.pipe(tap(result => console.log(result)))
+  return obs;
 }
 
 interface StateBooks {

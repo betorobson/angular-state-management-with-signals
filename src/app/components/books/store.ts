@@ -17,14 +17,14 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
-import { StateAuthorsServiceStore } from '../authors/store';
+import { EffectsNames, StateBooksServiceEffects } from './effects';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StateBooksServiceStore {
 
-  private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
+  private stateBooksServiceEffects = inject(StateBooksServiceEffects);
 
   private STATE = signal<StateBooks>({
     ids: [],
@@ -39,23 +39,6 @@ export class StateBooksServiceStore {
     this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
       entity => this.reducers.updateEntity(entity)
     );
-
-    ///////////////////// LISTENERS EFFECTS
-    // this.dispatchEffects.addEntity.subscribe(
-    //   entity => this.effects.addEntity(entity)
-    // );
-
-    // this.dispatchEffects.addEntity_success.subscribe(
-    //   entity => this.effects.addEntity_success(entity)
-    // );
-
-    // this.dispatchEffects.addEntity_error.subscribe(
-    //   entity => this.effects.addEntity_error(entity)
-    // );
-
-    // this.dispatchReducers.updateEntity.pipe(delay(2000)).subscribe(
-    //   entity => this.reducers.updateEntity(entity)
-    // );
 
   }
 
@@ -103,6 +86,7 @@ export class StateBooksServiceStore {
           this.effects.addEntity_success(book);
         },
         error => {
+          console.log('addBook', error);
           this.effects.addEntity_error(book, error);
         }
       )
@@ -114,39 +98,25 @@ export class StateBooksServiceStore {
 
   ///////////////////// EFFECTS
 
-  // private dispatchEffects = {
-  //   addEntity: new Subject<BooksModel>,
-  //   addEntity_success: new Subject<BooksModel>,
-  //   addEntity_error: new Subject<BooksModel>,
-  //   updateEntity: new Subject<BooksModel>,
-  // }
-
   private effects = {
-    addEntity: (entity: BooksModel) => of(entity)
-      .pipe(
-        // takeUntilDestroyed(),
-        tap(entity => {
-          // if(entity.authorId === '1') throw new Error('Invalid ID')
-        }),
-        // catchError((error, caght) => error)
-      ),
-    addEntity_success: (entity: BooksModel) => {
-      const obs = of(entity);
-      obs.pipe(tap(x => console.log(x)))
-      // .pipe(tap(entity => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)))
-      obs.subscribe()
-    },
-    addEntity_error: (entity: BooksModel, error: ErrorEvent) => of(entity)
-      .pipe(tap(entity => console.log('error', entity, error)))
-      .subscribe(),
-    updateEntity: new Subject<BooksModel>,
+
+    addEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+      EffectsNames.ADD_ENTITY,
+      of(entity)
+    ),
+
+    addEntity_success: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+      EffectsNames.ADD_ENTITY_SUCCESS,
+      of(entity)
+    ).subscribe(),
+
+    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.stateBooksServiceEffects.runEffect(
+      EffectsNames.ADD_ENTITY_ERROR,
+      of(entity)
+    ).subscribe(),
+
   }
 
-}
-
-function testAddPipe(obs: Observable<BooksModel>){
-  obs.pipe(tap(result => console.log(result)))
-  return obs;
 }
 
 interface StateBooks {

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { StateBooksServiceStore } from './store';
 import { CommonModule } from '@angular/common';
 import { StateAuthorsServiceStore } from '../authors/store';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BooksModel } from '../../api-services/books.service';
 
 @Component({
@@ -10,17 +10,21 @@ import { BooksModel } from '../../api-services/books.service';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div style="display: flex">
-      <select [formControl]="authorIdFormControl">
+      <form (submit)="addBook()">
+      <select [formControl]="formGroup.controls['authorId']">
         @for(author of dataAuthors(); track $index){
           <option
             [value]="author.id"
           >{{author.name}} ({{author.totalBooks}})</option>
         }
       </select>
+      <input [formControl]="formGroup.controls['title']" />
       <button
+        type="submit"
         (click)="addBook()"
-        [disabled]="!authorIdFormControl.value"
-      >add</button> {{this.authorIdFormControl.value}}
+        [disabled]="!formGroup.valid"
+      >add</button>
+      </form>
     </div>
     <hr />
     @for(item of data(); track $index){
@@ -49,7 +53,10 @@ export class ListBooksComponent {
   dataAuthors = this.stateAuthorsServiceStore.selectors.selectAll;
   data = this.stateBooksServiceStore.selectors.selectAll;
 
-  authorIdFormControl = new FormControl<string>('1');
+  formGroup = new FormGroup({
+    authorId: new FormControl<string>('1', [Validators.required]),
+    title: new FormControl<string>('', [Validators.required]),
+  })
 
   constructor(){
 
@@ -58,10 +65,12 @@ export class ListBooksComponent {
   addBook(){
     this.stateBooksServiceStore.addBook({
       id: (new Date()).getTime().toString(),
-      authorId: this.authorIdFormControl.value,
+      authorId: this.formGroup.value.authorId,
       rating: 7,
-      title: 'How to do that?'
-    })
+      title: this.formGroup.value.title
+    });
+
+    return false;
   }
 
   updateRating(book: BooksModel, rating: number){

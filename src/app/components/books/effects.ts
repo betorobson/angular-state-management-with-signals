@@ -1,0 +1,84 @@
+import { Injectable, signal, computed, effect, inject, untracked} from '@angular/core';
+import {
+  Subject,
+  switchMap,
+  of,
+  catchError,
+  throwError,
+  tap,
+  Observable,
+  Subscriber,
+  map,
+  delay,
+  concatMap,
+  mergeMap,
+  take,
+} from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { APIServiceItems, ItemModel } from '../../api-services/items.service';
+import { BooksModel } from '../../api-services/books.service';
+import { StateAuthorsServiceStore } from '../authors/store';
+import { StateBooksServiceStore } from './store';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class StateBooksServiceEffects {
+
+  private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
+  // private stateBooksServiceStore = inject(StateBooksServiceStore);
+
+  private effects: Effects = {
+
+    [EffectsNames.ADD_ENTITY]: [
+
+      (entity) => {
+          console.log('observableEntity 1', entity);
+      },
+
+      (entity) => {
+          if(/bob/.test(entity.title)) throw new Error('Bob is not an allowed world in book title')
+          console.log('observableEntity 2', entity);
+      },
+
+      (entity) => {
+          console.log('observableEntity 3', entity);
+      },
+
+    ],
+
+    [EffectsNames.ADD_ENTITY_SUCCESS]: [
+
+      // UPDATE Parent State
+      (entity) => this.stateAuthorsServiceStore.updateTotalBooks(entity.authorId)
+
+    ]
+
+  }
+
+  runEffect(
+    name: EffectsNames,
+    entity: Observable<BooksModel>
+  ){
+    return entity.pipe(
+      tap(entity => {
+        if(this.effects[name]){
+          this.effects[name].forEach(
+            effectFunction => effectFunction(entity)
+          )
+        }
+      })
+    )
+  }
+
+}
+
+type Effects = {
+  [effectName in EffectsNames]?: Array<(entity: BooksModel) => void>;
+}
+
+export enum EffectsNames {
+  ADD_ENTITY,
+  ADD_ENTITY_SUCCESS,
+  ADD_ENTITY_ERROR,
+}

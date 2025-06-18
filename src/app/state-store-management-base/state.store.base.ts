@@ -9,15 +9,15 @@ export abstract class StateStoreBase<STATE_MODEL> {
   protected effects?: StateEffectsBase<STATE_MODEL>;
 
   protected execReducers: {
-    [key: string | number]: Subject<Partial<STATE_MODEL>>
+    [key: string | number]: Subject<any>
   } = {}
 
   actions: {
-    [key: string | number]: (parameter: any) => void
+    [key: string | number]: (properties?: any) => void
   }
 
   protected reducers: {
-    [key: string | number]: (stateModel?: Partial<STATE_MODEL>) => void
+    [key: string | number]: (properties?: any) => void
   }
 
   constructor(){
@@ -28,7 +28,7 @@ export abstract class StateStoreBase<STATE_MODEL> {
 
     Object.keys(this.actions).forEach(
       reducerName => {
-        this.execReducers[reducerName] = new Subject<Partial<STATE_MODEL>>();
+        this.execReducers[reducerName] = new Subject<any>();
         this.execReducers[reducerName].subscribe(
           stateModel => {
             if(this.reducers[reducerName]){
@@ -41,7 +41,7 @@ export abstract class StateStoreBase<STATE_MODEL> {
 
   }
 
-  execReducer(reducerName: string | number, stateModel?: Partial<STATE_MODEL>){
+  execReducer(reducerName: string | number, properties?: any){
     if(this.execReducers[reducerName]){
 
       if(this.effects){
@@ -49,19 +49,19 @@ export abstract class StateStoreBase<STATE_MODEL> {
           reducerName,
           of({
             ...this.STATE(),
-            stateModel
+            // stateModel
           })
         ).subscribe(
           stateModelResult => {
-            this.execReducers[reducerName].next(stateModel);
+            this.execReducers[reducerName].next(properties);
             // this.entityEffects.addEntity_success(book);
           },
           error => {
             this.effects.runEffect(
-              `${reducerName}_error`,
+              `${reducerName}:${EffectNameSuffixes.ERROR}`,
               of({
                 ...this.STATE(),
-                stateModel
+                // stateModel
               }),
               error
             ).subscribe()
@@ -70,11 +70,16 @@ export abstract class StateStoreBase<STATE_MODEL> {
         )
 
       }else{
-        this.execReducers[reducerName].next(stateModel);
+        this.execReducers[reducerName].next(properties);
       }
 
     }
   }
 
 
+}
+
+export enum EffectNameSuffixes {
+  ERROR = 'ERROR',
+  SUCCESS = 'SUCESS',
 }

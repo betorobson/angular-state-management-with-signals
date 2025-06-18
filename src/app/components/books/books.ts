@@ -28,6 +28,10 @@ import { BooksModel } from '../../api-services/books.service';
         type="button"
         (click)="test()"
       >TEST({{lastUpdate()}})</button>
+      <button
+        type="button"
+        (click)="testIncrement()"
+      >+</button>
       </form>
     </div>
     <hr />
@@ -67,6 +71,10 @@ export class ListBooksComponent {
   // ONLY FOR TEST
   test(){
     this.stateBooksServiceStore.actions[StateBooksActions.SET_LAST_UPDATE](new Date().getTime());
+  }
+
+  testIncrement(){
+    this.stateBooksServiceStore.actions[StateBooksActions.INCREMENT]();
   }
 
   constructor(){

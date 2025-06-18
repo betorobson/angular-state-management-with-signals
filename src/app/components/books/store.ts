@@ -82,9 +82,13 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
   }
 
   protected override reducers = {
+
     [StateBooksActions.SET_LAST_UPDATE]: ({lastUpdate}: Partial<StateBooks>) => {
       this.STATE.update(state => ({...state, lastUpdate}))
-    }
+    },
+
+    [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
+
   }
 
   private dispatchEntityReducers = {
@@ -95,6 +99,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
   ///////////////////// ACTIONS
 
   override actions = {
+
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.execReducer(
         StateBooksActions.SET_LAST_UPDATE,
@@ -102,7 +107,10 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
           lastUpdate
         }
       );
-    }
+    },
+
+    [StateBooksActions.INCREMENT]: () => this.execReducer(StateBooksActions.INCREMENT)
+
   }
 
   addBook(book: BooksModel){
@@ -166,5 +174,6 @@ export interface StateBooks {
 }
 
 export enum StateBooksActions {
-  SET_LAST_UPDATE
+  SET_LAST_UPDATE,
+  INCREMENT
 }

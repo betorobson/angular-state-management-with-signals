@@ -20,6 +20,7 @@ import { BooksModel } from '../../api-services/books.service';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
+import { StateStoreBase } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,7 @@ import { StateEffectsBase } from '../../state-store-management-base/state.effect
 export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
 
   private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
-  // private stateBooksServiceStore = inject(StateBooksServiceStore);
+  protected override stateStoreReference: StateBooksServiceStore;
 
   private testCount = 0;
   protected override effects = {
@@ -41,6 +42,12 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
             }
           })
         );
+    },
+    [`${StateBooksActions.SET_LAST_UPDATE}_error`]: (stateModel: Observable<StateBooks>, error: ErrorEvent) => {
+      console.log(error);
+      this.testCount = 0;
+      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](0);
+      return stateModel;
     }
   }
 

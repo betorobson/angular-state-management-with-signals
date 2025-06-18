@@ -25,9 +25,9 @@ import { StateStoreBase } from '../../state-store-management-base/state.store.ba
 })
 export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
-  private stateBooksServiceEffects = inject(StateBooksServiceEffects);
+  protected override effects = inject(StateBooksServiceEffects);
 
-  private STATE = signal<StateBooks>({
+  protected override STATE = signal<StateBooks>({
     lastUpdate: 0,
     ids: [],
     entities: {}
@@ -42,6 +42,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
     super();
 
+    this.effects.setStateStoreReference(this);
     this.setExecReducers();
 
     ///////////////////// LISTENERS REDUCERS
@@ -100,32 +101,12 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
   override actions = {
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
-
-      this.stateBooksServiceEffects.runEffect(
+      this.execReducer(
         StateBooksActions.SET_LAST_UPDATE,
-        of({
-          ...this.STATE(),
+        {
           lastUpdate
-        })
-      ).subscribe(
-
-        () => {
-          this.execReducer(
-            StateBooksActions.SET_LAST_UPDATE,
-            {
-              lastUpdate
-            }
-          );
-          // this.entityEffects.addEntity_success(book);
-        },
-
-        error => {
-          console.log('SET_LAST_UPDATE', error);
-          // this.entityEffects.addEntity_error(book, error);
         }
-
       );
-
     }
   }
 
@@ -159,22 +140,22 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
   private entityEffects = {
 
-    addEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
+    addEntity: (entity: BooksModel) => this.effects.runEntityEffect(
       EffectsNames.ADD_ENTITY,
       of(entity)
     ),
 
-    addEntity_success: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
+    addEntity_success: (entity: BooksModel) => this.effects.runEntityEffect(
       EffectsNames.ADD_ENTITY_SUCCESS,
       of(entity)
     ).subscribe(),
 
-    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.stateBooksServiceEffects.runEntityEffect(
+    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.effects.runEntityEffect(
       EffectsNames.ADD_ENTITY_ERROR,
       of(entity)
     ).subscribe(),
 
-    updateEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
+    updateEntity: (entity: BooksModel) => this.effects.runEntityEffect(
       EffectsNames.UPDATE_ENTITY,
       of(entity)
     ),

@@ -33,11 +33,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
     entities: {}
   });
 
-  // ONLY FOR TEST
-  test(){
-    this.STATE.update(state => ({...state, lastUpdate: new Date().getTime()}))
-  }
-
   constructor(){
 
     super();

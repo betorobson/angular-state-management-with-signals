@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { StateBooksServiceStore } from './store';
+import { StateBooksActions, StateBooksServiceStore } from './store';
 import { CommonModule } from '@angular/common';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,6 +24,10 @@ import { BooksModel } from '../../api-services/books.service';
         (click)="addBook()"
         [disabled]="!formGroup.valid"
       >add</button>
+      <button
+        type="button"
+        (click)="test()"
+      >TEST({{lastUpdate()}})</button>
       </form>
     </div>
     <hr />
@@ -51,12 +55,19 @@ export class ListBooksComponent {
   private stateBooksServiceStore = inject(StateBooksServiceStore);
 
   dataAuthors = this.stateAuthorsServiceStore.selectors.selectAll;
+
+  lastUpdate = this.stateBooksServiceStore.selectors.lastUpdate;
   data = this.stateBooksServiceStore.selectors.selectAll;
 
   formGroup = new FormGroup({
     authorId: new FormControl<string>('1', [Validators.required]),
     title: new FormControl<string>('', [Validators.required]),
   })
+
+  // ONLY FOR TEST
+  test(){
+    this.stateBooksServiceStore.actions[StateBooksActions.SET_LAST_UPDATE](new Date().getTime());
+  }
 
   constructor(){
 

@@ -18,39 +18,51 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
 import { EffectsNames, StateBooksServiceEffects } from './effects';
+import { StateStoreBase } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StateBooksServiceStore {
+export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
   private stateBooksServiceEffects = inject(StateBooksServiceEffects);
 
   private STATE = signal<StateBooks>({
+    lastUpdate: 0,
     ids: [],
     entities: {}
   });
 
+  // ONLY FOR TEST
+  test(){
+    this.STATE.update(state => ({...state, lastUpdate: new Date().getTime()}))
+  }
+
   constructor(){
 
+    super();
+
+    this.setExecReducers();
+
     ///////////////////// LISTENERS REDUCERS
-    this.dispatchReducers.addEntity.subscribe(
-      entity => this.reducers.addEntity(entity)
+    this.dispatchEntityReducers.addEntity.subscribe(
+      entity => this.entityReducers.addEntity(entity)
     )
 
-    this.dispatchReducers.updateEntity.subscribe(
-      entity => this.reducers.updateEntity(entity)
+    this.dispatchEntityReducers.updateEntity.subscribe(
+      entity => this.entityReducers.updateEntity(entity)
     );
 
   }
 
   ///////////////////// SELECTORS
   selectors = {
-    selectAll: computed(() => this.STATE().ids.map(id => this.STATE().entities[id]))
+    selectAll: computed(() => this.STATE().ids.map(id => this.STATE().entities[id])),
+    lastUpdate: computed(() => this.STATE().lastUpdate),
   }
 
   ///////////////////// REDUCERS
-  private reducers = {
+  private entityReducers = {
     addEntity: (book: BooksModel) => {
       this.STATE.update(
         state => ({
@@ -73,32 +85,69 @@ export class StateBooksServiceStore {
     }
   }
 
-  private dispatchReducers = {
+  protected override reducers = {
+    [StateBooksActions.SET_LAST_UPDATE]: ({lastUpdate}: Partial<StateBooks>) => {
+      this.STATE.update(state => ({...state, lastUpdate}))
+    }
+  }
+
+  private dispatchEntityReducers = {
     addEntity: new Subject<BooksModel>,
     updateEntity: new Subject<BooksModel>,
   }
 
   ///////////////////// ACTIONS
 
+  override actions = {
+    [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
+
+      this.stateBooksServiceEffects.runEffect(
+        StateBooksActions.SET_LAST_UPDATE,
+        of({
+          ...this.STATE(),
+          lastUpdate
+        })
+      ).subscribe(
+
+        () => {
+          this.execReducer(
+            StateBooksActions.SET_LAST_UPDATE,
+            {
+              lastUpdate
+            }
+          );
+          // this.entityEffects.addEntity_success(book);
+        },
+
+        error => {
+          console.log('SET_LAST_UPDATE', error);
+          // this.entityEffects.addEntity_error(book, error);
+        }
+
+      );
+
+    }
+  }
+
   addBook(book: BooksModel){
-    this.effects.addEntity(book)
+    this.entityEffects.addEntity(book)
       .subscribe(
         () => {
-          this.dispatchReducers.addEntity.next(book);
-          this.effects.addEntity_success(book);
+          this.dispatchEntityReducers.addEntity.next(book);
+          this.entityEffects.addEntity_success(book);
         },
         error => {
           console.log('addBook', error);
-          this.effects.addEntity_error(book, error);
+          this.entityEffects.addEntity_error(book, error);
         }
       )
   }
 
   updateBook(book: BooksModel){
-    this.effects.updateEntity(book)
+    this.entityEffects.updateEntity(book)
       .subscribe(
         () => {
-          this.dispatchReducers.updateEntity.next(book);
+          this.dispatchEntityReducers.updateEntity.next(book);
         },
         error => {
           console.log('updateBook', error);
@@ -108,24 +157,24 @@ export class StateBooksServiceStore {
 
   ///////////////////// EFFECTS
 
-  private effects = {
+  private entityEffects = {
 
-    addEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+    addEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
       EffectsNames.ADD_ENTITY,
       of(entity)
     ),
 
-    addEntity_success: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+    addEntity_success: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
       EffectsNames.ADD_ENTITY_SUCCESS,
       of(entity)
     ).subscribe(),
 
-    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.stateBooksServiceEffects.runEffect(
+    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.stateBooksServiceEffects.runEntityEffect(
       EffectsNames.ADD_ENTITY_ERROR,
       of(entity)
     ).subscribe(),
 
-    updateEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEffect(
+    updateEntity: (entity: BooksModel) => this.stateBooksServiceEffects.runEntityEffect(
       EffectsNames.UPDATE_ENTITY,
       of(entity)
     ),
@@ -134,7 +183,12 @@ export class StateBooksServiceStore {
 
 }
 
-interface StateBooks {
+export interface StateBooks {
+  lastUpdate: number;
   ids: string[],
   entities: {[bookId: string]: BooksModel};
+}
+
+export enum StateBooksActions {
+  SET_LAST_UPDATE
 }

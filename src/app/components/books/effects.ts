@@ -18,17 +18,33 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
 import { StateAuthorsServiceStore } from '../authors/store';
-import { StateBooksServiceStore } from './store';
+import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
+import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StateBooksServiceEffects {
+export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
 
   private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
   // private stateBooksServiceStore = inject(StateBooksServiceStore);
 
-  private effects: Effects = {
+  private testCount = 0;
+  protected override effects = {
+    [StateBooksActions.SET_LAST_UPDATE]: (stateModelObservable: Observable<StateBooks>) => {
+      this.testCount++;
+      return stateModelObservable
+        .pipe(
+          tap(() => {
+            if(this.testCount > 3){
+              throw new Error('Only allowed 3 times update');
+            }
+          })
+        );
+    }
+  }
+
+  private entiryEffects: Effects = {
 
     [EffectsNames.ADD_ENTITY]: entity => {
       return entity.pipe(
@@ -66,12 +82,12 @@ export class StateBooksServiceEffects {
 
   }
 
-  runEffect(
+  runEntityEffect(
     name: EffectsNames,
     entity: Observable<BooksModel>
   ){
-      if(this.effects[name]){
-        return this.effects[name](entity);
+      if(this.entiryEffects[name]){
+        return this.entiryEffects[name](entity);
       }else{
         return entity;
       }

@@ -13,7 +13,7 @@ export abstract class StateStoreBase<STATE_MODEL> {
   } = {}
 
   actions: {
-    [key: string | number]: (properties?: any) => void
+    [key: string | number]: (properties?: any) => void;
   }
 
   protected reducers: {
@@ -60,4 +60,9 @@ export abstract class StateStoreBase<STATE_MODEL> {
 export enum EffectNameSuffixes {
   ERROR = 'ERROR',
   SUCCESS = 'SUCESS',
+}
+
+export enum StateStoreEntityActions {
+  ADD_ENTITY = 'ADD_ENTITY',
+  UPDATE_ENTITY = 'UPDATE_ENTITY',
 }

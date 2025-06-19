@@ -20,7 +20,7 @@ import { BooksModel } from '../../api-services/books.service';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
-import { EffectNameSuffixes, StateStoreBase } from '../../state-store-management-base/state.store.base';
+import { EffectNameSuffixes, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
@@ -53,35 +53,31 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
 
     [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (result: {lastUpdate: number}) => {
       console.log('EFFECT: LOAD DATA SUCCESS', result);
-      // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](result.lastUpdate);
     },
 
     [`${StateBooksActions.LOAD_DATA}:ERROR`]: (result: any) => {
       console.log('EFFECT: LOAD DATA ERROR', result);
-      // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](1);
     },
 
     [StateBooksActions.SET_LAST_UPDATE]: (properties: any) => {
       console.log('EFFECT: SET_LAST_UPDATE', properties)
-      // this.testCount++;
-      // return stateModelObservable
-      //   .pipe(
-      //     tap(() => {
-      //       if(this.testCount > 3){
-      //         throw new Error('Only allowed 3 times update');
-      //       }
-      //     })
-      //   );
     },
-    // [`${StateBooksActions.SET_LAST_UPDATE}:${EffectNameSuffixes.ERROR}`]: (properties: any) => {
-    //   console.log('error', properties);
-    //   // this.testCount = 0;
-    //   // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](0);
-    //   // return stateModel;
-    // }
+
+    // ENTITY
+
+    [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
+      this.stateStoreReference.actions[StateBooksActions.INCREMENT]();
+    },
+
+    [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
+      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
+        new Date().getTime()
+      );
+    },
+
   }
 
-  private entiryEffects: Effects = {
+  private entityEffects: Effects = {
 
     [EffectsNames.ADD_ENTITY]: entity => {
       return entity.pipe(
@@ -123,8 +119,8 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
     name: EffectsNames,
     entity: Observable<BooksModel>
   ){
-      if(this.entiryEffects[name]){
-        return this.entiryEffects[name](entity);
+      if(this.entityEffects[name]){
+        return this.entityEffects[name](entity);
       }else{
         return entity;
       }

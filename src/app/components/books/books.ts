@@ -35,15 +35,25 @@ import { BooksModel } from '../../api-services/books.service';
       </form>
     </div>
     <hr />
-    @for(item of data(); track $index){
     <div style="display: flex">
-        <div style="display: flex; flex-direction: column">
-        <button (click)="updateRating(item, item.rating - 1)">DOWN RATING</button>
-        <button (click)="updateRating(item, item.rating + 1)">UP RATING</button>
-        </div>
-        <pre>{{item | json}}</pre>
+      <div>
+      @for(item of data(); track $index){
+      <div style="display: flex">
+          <div style="display: flex; flex-direction: column">
+          <button (click)="updateRating(item, item.rating - 1)">DOWN RATING</button>
+          <button (click)="updateRating(item, item.rating + 1)">UP RATING</button>
+          </div>
+          <pre>{{item | json}}</pre>
+      </div>
+      }
+      </div>
+      <div>
+        <strong>Best title</strong>
+        @for(item of bestTitle(); track $index){
+          <p>{{item.title}}</p>
+        }
+      </div>
     </div>
-    }
   `,
   styles: `
     pre {
@@ -62,6 +72,7 @@ export class ListBooksComponent implements OnInit {
 
   lastUpdate = this.stateBooksServiceStore.selectors.lastUpdate;
   data = this.stateBooksServiceStore.selectors.selectAll;
+  bestTitle = this.stateBooksServiceStore.selectors.filterRatingTitle;
 
   formGroup = new FormGroup({
     authorId: new FormControl<string>('1', [Validators.required]),

@@ -33,6 +33,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
   protected entityReducers: {
     [key: string | number]: (properties?: any) => void
   } = {
+
     [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => ({
@@ -40,6 +41,23 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
           ids: [...state.ids, entity.id],
           entities: {...state.entities, [entity.id]: entity}
         })
+      )
+    },
+
+    [StateStoreEntityActions.REMOVE_ENTITY]: (entity: ENTITY_MODEL) => {
+      this.STATE_ENTITIES.update(
+        state => {
+          state.entities[entity.id] = null;
+          delete state.entities[entity.id]
+          return {
+            ...state,
+            ids: [
+              ...state.ids.slice(0,state.ids.indexOf(entity.id)),
+              ...state.ids.slice(state.ids.indexOf(entity.id)+1)
+            ],
+            entities: {...state.entities, [entity.id]: entity}
+          }
+        }
       )
     },
 
@@ -60,6 +78,9 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
   entityActions = {
     [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
       this.execReducer(StateStoreEntityActions.ADD_ENTITY, entity);
+    },
+    [StateStoreEntityActions.REMOVE_ENTITY]: (id: string) => {
+      this.execReducer(StateStoreEntityActions.REMOVE_ENTITY, {id});
     },
     [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
       this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, entity);
@@ -110,6 +131,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
 export enum StateStoreEntityActions {
   ADD_ENTITY = 'ADD_ENTITY',
+  REMOVE_ENTITY = 'REMOVE_ENTITY',
   UPDATE_ENTITY = 'UPDATE_ENTITY',
 }
 

@@ -42,6 +42,7 @@ import { BooksModel } from '../../api-services/books.service';
           <div style="display: flex; flex-direction: column">
           <button (click)="updateRating(item, item.rating - 1)">DOWN RATING</button>
           <button (click)="updateRating(item, item.rating + 1)">UP RATING</button>
+          <button (click)="removeBook(item)">REMOVE</button>
           </div>
           <pre>{{item | json}}</pre>
       </div>
@@ -105,6 +106,10 @@ export class ListBooksComponent implements OnInit {
     });
 
     return false;
+  }
+
+  removeBook(book: BooksModel){
+    this.stateBooksServiceStore.removeBook(book);
   }
 
   updateRating(book: BooksModel, rating: number){

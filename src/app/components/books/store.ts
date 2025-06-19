@@ -102,6 +102,10 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     this.entityActions[StateStoreEntityActions.ADD_ENTITY](book);
   }
 
+  removeBook(book: BooksModel){
+    this.entityActions[StateStoreEntityActions.REMOVE_ENTITY](book.id);
+  }
+
   updateBook(book: BooksModel){
     this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
   }

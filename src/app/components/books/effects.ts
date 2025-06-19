@@ -29,8 +29,6 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
   protected override stateStoreReference: StateBooksServiceStore;
 
-  private testCount = 0;
-
   register(){
 
     this.registerEffect(
@@ -96,11 +94,4 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
   }
 
-}
-
-export enum EffectsNames {
-  ADD_ENTITY,
-  ADD_ENTITY_SUCCESS,
-  ADD_ENTITY_ERROR,
-  UPDATE_ENTITY
 }

@@ -108,11 +108,6 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
 }
 
-export enum EffectNameSuffixes {
-  ERROR = 'ERROR',
-  SUCCESS = 'SUCESS',
-}
-
 export enum StateStoreEntityActions {
   ADD_ENTITY = 'ADD_ENTITY',
   UPDATE_ENTITY = 'UPDATE_ENTITY',

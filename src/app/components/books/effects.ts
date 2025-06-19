@@ -20,7 +20,7 @@ import { BooksModel } from '../../api-services/books.service';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
-import { EffectNameSuffixes, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
+import { StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',

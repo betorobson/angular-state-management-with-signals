@@ -17,7 +17,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
-import { StateAuthorsServiceStore } from '../authors/store';
+import { StateAuthorsActions, StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
 import { StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
@@ -28,6 +28,7 @@ import { StateStoreBase, StateStoreEntityActions } from '../../state-store-manag
 export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, BooksModel> {
 
   protected override stateStoreReference: StateBooksServiceStore;
+  private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
 
   register(){
 
@@ -79,7 +80,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     this.registerEffect(
       StateStoreEntityActions.ADD_ENTITY,
       (bookModel: BooksModel) => {
+
         this.stateStoreReference.actions[StateBooksActions.INCREMENT]();
+
+
+        this.stateAuthorsServiceStore
+          .actions[StateAuthorsActions.INCREMENT_TOTAL_BOOKS](bookModel.authorId);
+
       }
     );
 

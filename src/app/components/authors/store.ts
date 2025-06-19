@@ -59,8 +59,35 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
     this.entityActions[StateStoreEntityActions.ADD_ENTITY](author);
   }
 
+  protected override reducers = {
+    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]: (authorId: string) => {
+      console.log(StateAuthorsActions.INCREMENT_TOTAL_BOOKS, authorId);
+      this.STATE_ENTITIES.update(
+        state => ({
+          ...state,
+          entities: {
+            ...state.entities,
+            [authorId]: {
+              ...state.entities[authorId],
+              totalBooks: state.entities[authorId].totalBooks + 1
+            }
+          }
+        })
+      )
+    },
+  }
+
+  override actions = {
+    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]
+      : (authorId: string) => this.execReducer(StateAuthorsActions.INCREMENT_TOTAL_BOOKS, authorId),
+  }
+
 }
 
 interface StateAuthors {
   lastUpdate: number,
+}
+
+export enum StateAuthorsActions {
+  INCREMENT_TOTAL_BOOKS = 'INCREMENT_TOTAL_BOOKS',
 }

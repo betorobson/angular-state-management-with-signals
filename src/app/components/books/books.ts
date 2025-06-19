@@ -32,6 +32,11 @@ import { BooksModel } from '../../api-services/books.service';
         type="button"
         (click)="testIncrement()"
       >+</button>
+      |
+      <button
+        type="button"
+        (click)="addAuthor()"
+      >Add Author</button>
       </form>
     </div>
     <hr />
@@ -95,6 +100,15 @@ export class ListBooksComponent implements OnInit {
 
   ngOnInit(): void {
     this.stateBooksServiceStore.actions[StateBooksActions.LOAD_DATA]();
+  }
+
+  addAuthor(){
+    this.stateAuthorsServiceStore.addAuthor({
+      id: new Date().getTime().toString(),
+      name: 'New name ' + this.dataAuthors().length,
+      about: 'test',
+      totalBooks: 0
+    })
   }
 
   addBook(){

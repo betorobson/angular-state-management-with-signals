@@ -24,11 +24,11 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
   actions: {
     [key: string | number]: (properties?: any) => void;
-  }
+  } = {}
 
   protected reducers: {
     [key: string | number]: (properties?: any) => void
-  }
+  } = {}
 
   protected entityReducers: {
     [key: string | number]: (properties?: any) => void
@@ -116,10 +116,12 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
   execReducer(reducerName: string | number, properties?: any){
     if(this.execReducers[reducerName]){
 
-      this.effects.runEffect(
-        reducerName,
-        properties
-      );
+      if(this.effects){
+        this.effects.runEffect(
+          reducerName,
+          properties
+        );
+      }
 
       this.execReducers[reducerName].next(properties);
 

@@ -18,89 +18,49 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
 import { AuthorsModel } from '../../api-services/authors.service';
+import { StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StateAuthorsServiceStore {
+export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, AuthorsModel> {
 
-  private STATE = signal<StateAuthors>({
-    ids: ['1', '2'],
-    entities: {
-      '1': {
-        id: '1',
-        name: 'Robert Nogueira',
-        about: 'It\'s me',
-        totalBooks: 0
-      },
-      '2': {
-        id: '2',
-        name: 'Robson Soares',
-        about: 'Also It\'s me',
-        totalBooks: 0
-      }
-    }
+  protected override STATE = signal<StateAuthors>({
+    lastUpdate: 0
   });
 
-  constructor(){
-    this.dispatchReducers.addEntity.subscribe(
-      entity => this.reducers.addEntity(entity)
-    );
-    this.dispatchReducers.updateTotalBooks.subscribe(
-      id => this.reducers.updateTotalBooks(id)
-    );
-  }
-
-  ///////////////////// SELECTORS
   selectors = {
-    selectAll: computed(() => this.STATE().ids.map(id => this.STATE().entities[id]))
+    selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
   }
 
-  ///////////////////// REDUCERS
-  private reducers = {
-    addEntity: (author: AuthorsModel) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          ids: [...state.ids, author.id],
-          entities: {...state.entities, [author.id]: author}
-        })
-      )
-    },
-    updateTotalBooks: (authorId: string) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          entities: {
-            ...state.entities,
-            [authorId]: {
-              ...state.entities[authorId],
-              totalBooks: state.entities[authorId].totalBooks + 1
-            }
-          }
-        })
-      )
-    },
+  constructor(){
+
+    super();
+
+    this.setExecReducers();
+
+    this.entityActions[StateStoreEntityActions.ADD_ENTITY]({
+      id: '1',
+      name: 'Robert Nogueira',
+      about: 'It\'s me',
+      totalBooks: 0
+    });
+
+    this.entityActions[StateStoreEntityActions.ADD_ENTITY]({
+      id: '2',
+      name: 'Robson Soares',
+      about: 'Also It\'s me',
+      totalBooks: 0
+    });
+
   }
 
-  private dispatchReducers = {
-    addEntity: new Subject<AuthorsModel>,
-    updateTotalBooks: new Subject<string>,
-  }
-
-  ///////////////////// ACTIONS
-
-  addAuthor(book: AuthorsModel){
-    this.dispatchReducers.addEntity.next(book);
-  }
-
-  updateTotalBooks(authorId: string){
-    this.dispatchReducers.updateTotalBooks.next(authorId);
+  addAuthor(author: AuthorsModel){
+    this.entityActions[StateStoreEntityActions.ADD_ENTITY](author);
   }
 
 }
 
 interface StateAuthors {
-  ids: string[],
-  entities: {[key: string]: AuthorsModel};
+  lastUpdate: number,
 }

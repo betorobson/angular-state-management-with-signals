@@ -85,6 +85,16 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
     [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
 
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => {
+      console.log('REDUCER: LOAD_DATA:SUCCESS', stateBooks);
+      this.STATE.update(state => ({...state, ...stateBooks}))
+    },
+
+    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {
+      console.log('REDUCER: LOAD_DATA:ERROR', error);
+      this.actions[StateBooksActions.SET_LAST_UPDATE](1);
+    },
+
     [StateBooksActions.SET_LAST_UPDATE]: ({lastUpdate}: Partial<StateBooks>) => {
       this.STATE.update(state => ({...state, lastUpdate}))
     },
@@ -103,6 +113,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
   override actions = {
 
     [StateBooksActions.LOAD_DATA]: () => this.execReducer(StateBooksActions.LOAD_DATA),
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => this.execReducer(`${StateBooksActions.LOAD_DATA}:SUCCESS`, stateBooks),
+    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => this.execReducer(`${StateBooksActions.LOAD_DATA}:ERROR`, error),
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.execReducer(

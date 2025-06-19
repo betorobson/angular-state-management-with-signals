@@ -44,38 +44,10 @@ export abstract class StateStoreBase<STATE_MODEL> {
   execReducer(reducerName: string | number, properties?: any){
     if(this.execReducers[reducerName]){
 
-      if(this.effects){
-
-        this.effects.runEffect(
-          reducerName,
-          properties
-        );
-
-        // this.effects.runEffect(
-        //   reducerName,
-        //   of({
-        //     ...this.STATE(),
-        //     // stateModel
-        //   })
-        // ).subscribe(
-        //   stateModelResult => {
-        //     this.execReducers[reducerName].next(properties);
-        //     // this.entityEffects.addEntity_success(book);
-        //   },
-        //   error => {
-        //     this.effects.runEffect(
-        //       `${reducerName}:${EffectNameSuffixes.ERROR}`,
-        //       of({
-        //         ...this.STATE(),
-        //         // stateModel
-        //       }),
-        //       error
-        //     ).subscribe()
-        //     // this.entityEffects.addEntity_error(book, error);
-        //   }
-        // )
-      }else{
-      }
+      this.effects.runEffect(
+        reducerName,
+        properties
+      );
 
       this.execReducers[reducerName].next(properties);
 

@@ -15,7 +15,7 @@ export abstract class StateEffectsBase<STATE_MODEL> {
   }
 
   protected setExecEffects(){
-    Object.keys(this.stateStoreReference.actions).forEach(
+    Object.keys(this.effects).forEach(
       effectName => {
         this.execEffects[effectName] = new Subject<any>();
         this.execEffects[effectName].subscribe(
@@ -47,8 +47,8 @@ export abstract class StateEffectsBase<STATE_MODEL> {
     result: Observable<any>
   ){
     result.subscribe(
-      result => this.effects[`${name}:SUCCESS`]?.(result),
-      error => this.effects[`${name}:ERROR`]?.(error)
+      result => this.stateStoreReference.actions[`${name}:SUCCESS`](result),
+      error => this.stateStoreReference.actions[`${name}:ERROR`](error)
     )
   }
 

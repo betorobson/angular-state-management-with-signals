@@ -38,11 +38,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
 
       this.runEffectAsyncPipe(
         StateBooksActions.LOAD_DATA,
-        of({lastUpdate: 1234})
+        of({lastUpdate: 123})
           .pipe(
             delay(2000),
             tap(result => {
-              if(result.lastUpdate < 1000) throw new Error('too low')
+              if(result.lastUpdate < 1000) {
+                throw new Error('too low');
+              }
             })
           )
       );
@@ -50,17 +52,17 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
     },
 
     [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (result: {lastUpdate: number}) => {
-      console.log('LOAD DATA SUCCESS', result);
-      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](result.lastUpdate);
+      console.log('EFFECT: LOAD DATA SUCCESS', result);
+      // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](result.lastUpdate);
     },
 
     [`${StateBooksActions.LOAD_DATA}:ERROR`]: (result: any) => {
-      console.log('LOAD DATA ERROR', result);
-      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](1);
+      console.log('EFFECT: LOAD DATA ERROR', result);
+      // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](1);
     },
 
     [StateBooksActions.SET_LAST_UPDATE]: (properties: any) => {
-      console.log('SET_LAST_UPDATE', properties)
+      console.log('EFFECT: SET_LAST_UPDATE', properties)
       // this.testCount++;
       // return stateModelObservable
       //   .pipe(

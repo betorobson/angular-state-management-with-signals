@@ -84,6 +84,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     );
 
     this.registerEffect(
+      StateStoreEntityActions.REMOVE_ENTITY,
+      (book: Pick<BooksModel, 'id'>) => {
+        console.log('EFFECT: REMOVE_ENTITY', book)
+      }
+    );
+
+    this.registerEffect(
       StateStoreEntityActions.UPDATE_ENTITY,
       (bookModel: BooksModel) => {
         this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](

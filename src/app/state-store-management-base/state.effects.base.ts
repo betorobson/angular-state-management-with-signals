@@ -1,28 +1,55 @@
-import { Observable, Subject } from "rxjs"
+import { Observable, of, Subject, tap } from "rxjs"
 import { StateStoreBase } from "./state.store.base";
 
 export abstract class StateEffectsBase<STATE_MODEL> {
 
   protected abstract stateStoreReference: StateStoreBase<STATE_MODEL>;
 
+  protected execEffects: {
+    [key: string | number]: Subject<any>
+  } = {}
+
   setStateStoreReference(stateStoreReference: StateStoreBase<STATE_MODEL>){
     this.stateStoreReference = stateStoreReference;
+    this.setExecEffects();
+  }
+
+  protected setExecEffects(){
+    Object.keys(this.stateStoreReference.actions).forEach(
+      effectName => {
+        this.execEffects[effectName] = new Subject<any>();
+        this.execEffects[effectName].subscribe(
+          properties => {
+            if(this.effects[effectName]){
+              this.effects[effectName](properties)
+            }
+          }
+        )
+      }
+    )
   }
 
   protected effects: {
-    [key: string | number]: (stateModel: Observable<STATE_MODEL>, error?: ErrorEvent) => Observable<STATE_MODEL>
+    [key: string | number]: (properties: any) => void
   }
 
   runEffect(
     name: string | number,
-    entity: Observable<STATE_MODEL>,
-    error?: ErrorEvent,
+    properties: any
   ){
-      if(this.effects[name]){
-        return this.effects[name](entity, error);
-      }else{
-        return entity;
-      }
+    if(this.execEffects[name]){
+      this.execEffects[name].next(properties);
+    }
+  }
+
+  runEffectAsyncPipe(
+    name: string | number,
+    result: Observable<any>
+  ){
+    result.subscribe(
+      result => this.effects[`${name}:SUCCESS`]?.(result),
+      error => this.effects[`${name}:ERROR`]?.(error)
+    )
   }
 
 }

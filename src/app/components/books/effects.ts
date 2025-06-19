@@ -32,23 +32,51 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
 
   private testCount = 0;
   protected override effects = {
-    [StateBooksActions.SET_LAST_UPDATE]: (stateModelObservable: Observable<StateBooks>) => {
-      this.testCount++;
-      return stateModelObservable
-        .pipe(
-          tap(() => {
-            if(this.testCount > 3){
-              throw new Error('Only allowed 3 times update');
-            }
-          })
-        );
+    [StateBooksActions.LOAD_DATA]: () => {
+
+      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](-1);
+
+      this.runEffectAsyncPipe(
+        StateBooksActions.LOAD_DATA,
+        of({lastUpdate: 1234})
+          .pipe(
+            delay(2000),
+            tap(result => {
+              if(result.lastUpdate < 1000) throw new Error('too low')
+            })
+          )
+      );
+
     },
-    [`${StateBooksActions.SET_LAST_UPDATE}:${EffectNameSuffixes.ERROR}`]: (stateModel: Observable<StateBooks>, error: ErrorEvent) => {
-      console.log(error);
-      this.testCount = 0;
-      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](0);
-      return stateModel;
-    }
+
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (result: {lastUpdate: number}) => {
+      console.log('LOAD DATA SUCCESS', result);
+      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](result.lastUpdate);
+    },
+
+    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (result: any) => {
+      console.log('LOAD DATA ERROR', result);
+      this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](1);
+    },
+
+    [StateBooksActions.SET_LAST_UPDATE]: (properties: any) => {
+      console.log('SET_LAST_UPDATE', properties)
+      // this.testCount++;
+      // return stateModelObservable
+      //   .pipe(
+      //     tap(() => {
+      //       if(this.testCount > 3){
+      //         throw new Error('Only allowed 3 times update');
+      //       }
+      //     })
+      //   );
+    },
+    // [`${StateBooksActions.SET_LAST_UPDATE}:${EffectNameSuffixes.ERROR}`]: (properties: any) => {
+    //   console.log('error', properties);
+    //   // this.testCount = 0;
+    //   // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](0);
+    //   // return stateModel;
+    // }
   }
 
   private entiryEffects: Effects = {

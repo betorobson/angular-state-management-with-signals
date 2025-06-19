@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { StateBooksActions, StateBooksServiceStore } from './store';
 import { CommonModule } from '@angular/common';
 import { StateAuthorsServiceStore } from '../authors/store';
@@ -53,7 +53,7 @@ import { BooksModel } from '../../api-services/books.service';
     }
   `
 })
-export class ListBooksComponent {
+export class ListBooksComponent implements OnInit {
 
   private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
   private stateBooksServiceStore = inject(StateBooksServiceStore);
@@ -79,6 +79,10 @@ export class ListBooksComponent {
 
   constructor(){
 
+  }
+
+  ngOnInit(): void {
+    this.stateBooksServiceStore.actions[StateBooksActions.LOAD_DATA]();
   }
 
   addBook(){

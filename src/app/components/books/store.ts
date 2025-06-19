@@ -83,6 +83,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
   protected override reducers = {
 
+    [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
+
     [StateBooksActions.SET_LAST_UPDATE]: ({lastUpdate}: Partial<StateBooks>) => {
       this.STATE.update(state => ({...state, lastUpdate}))
     },
@@ -99,6 +101,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
   ///////////////////// ACTIONS
 
   override actions = {
+
+    [StateBooksActions.LOAD_DATA]: () => this.execReducer(StateBooksActions.LOAD_DATA),
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.execReducer(
@@ -174,6 +178,7 @@ export interface StateBooks {
 }
 
 export enum StateBooksActions {
+  LOAD_DATA,
   SET_LAST_UPDATE,
   INCREMENT
 }

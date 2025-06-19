@@ -18,19 +18,19 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
 import { EffectsNames, StateBooksServiceEffects } from './effects';
-import { StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
+import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
+export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksModel> {
 
   protected override effects = inject(StateBooksServiceEffects);
 
   protected override STATE = signal<StateBooks>({
     lastUpdate: 0,
-    ids: [],
-    entities: {}
+    // ids: [],
+    // entities: {}
   });
 
   constructor(){
@@ -40,24 +40,15 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
     this.effects.setStateStoreReference(this);
     this.setExecReducers();
 
-    ///////////////////// LISTENERS REDUCERS
-    this.TESTINGdispatchEntityReducers.addEntity.subscribe(
-      entity => this.TESTINGentityReducers.addEntity(entity)
-    )
-
-    this.TESTINGdispatchEntityReducers.updateEntity.subscribe(
-      entity => this.TESTINGentityReducers.updateEntity(entity)
-    );
-
   }
 
   ///////////////////// SELECTORS
   selectors = {
-    selectAll: computed(() => this.STATE().ids.map(id => this.STATE().entities[id])),
-    filterRatingTitle: computed(() => this.STATE().ids
-      .filter(id => this.STATE().entities[id].rating > 6)
+    selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
+    filterRatingTitle: computed(() => this.STATE_ENTITIES().ids
+      .filter(id => this.STATE_ENTITIES().entities[id].rating > 6)
       .map(filteredId => {
-        const {id, title} = this.STATE().entities[filteredId];
+        const {id, title} = this.STATE_ENTITIES().entities[filteredId];
         return {id, title}
       })
     ),
@@ -65,28 +56,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
   }
 
   ///////////////////// REDUCERS
-  private TESTINGentityReducers = {
-    addEntity: (book: BooksModel) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          ids: [...state.ids, book.id],
-          entities: {...state.entities, [book.id]: book}
-        })
-      )
-    },
-    updateEntity: (book: BooksModel) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          entities: {
-            ...state.entities,
-            [book.id]: book
-          }
-        })
-      )
-    }
-  }
 
   protected override reducers = {
 
@@ -110,33 +79,28 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
     // ENTITY
 
-    [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          ids: [...state.ids, bookModel.id],
-          entities: {...state.entities, [bookModel.id]: bookModel}
-        })
-      )
-    },
+    // [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
+    //   this.STATE.update(
+    //     state => ({
+    //       ...state,
+    //       ids: [...state.ids, bookModel.id],
+    //       entities: {...state.entities, [bookModel.id]: bookModel}
+    //     })
+    //   )
+    // },
 
-    [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          entities: {
-            ...state.entities,
-            [bookModel.id]: bookModel
-          }
-        })
-      )
-    },
+    // [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
+    //   this.STATE.update(
+    //     state => ({
+    //       ...state,
+    //       entities: {
+    //         ...state.entities,
+    //         [bookModel.id]: bookModel
+    //       }
+    //     })
+    //   )
+    // },
 
-  }
-
-  private TESTINGdispatchEntityReducers = {
-    addEntity: new Subject<BooksModel>,
-    updateEntity: new Subject<BooksModel>,
   }
 
   ///////////////////// ACTIONS
@@ -160,56 +124,30 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks> {
 
     // ENTITY
 
-    [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
-      this.execReducer(StateStoreEntityActions.ADD_ENTITY, bookModel);
-    },
+    // [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
+    //   this.execReducer(StateStoreEntityActions.ADD_ENTITY, bookModel);
+    // },
 
-    [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
-      this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, bookModel);
-    },
+    // [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
+    //   this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, bookModel);
+    // },
 
   }
 
   addBook(book: BooksModel){
-    this.actions[StateStoreEntityActions.ADD_ENTITY](book);
+    this.entityActions[StateStoreEntityActions.ADD_ENTITY](book);
   }
 
   updateBook(book: BooksModel){
-    this.actions[StateStoreEntityActions.UPDATE_ENTITY](book);
-  }
-
-  ///////////////////// EFFECTS
-
-  private TESTINGentityEffects = {
-
-    addEntity: (entity: BooksModel) => this.effects.runEntityEffect(
-      EffectsNames.ADD_ENTITY,
-      of(entity)
-    ),
-
-    addEntity_success: (entity: BooksModel) => this.effects.runEntityEffect(
-      EffectsNames.ADD_ENTITY_SUCCESS,
-      of(entity)
-    ).subscribe(),
-
-    addEntity_error: (entity: BooksModel, error: ErrorEvent) => this.effects.runEntityEffect(
-      EffectsNames.ADD_ENTITY_ERROR,
-      of(entity)
-    ).subscribe(),
-
-    updateEntity: (entity: BooksModel) => this.effects.runEntityEffect(
-      EffectsNames.UPDATE_ENTITY,
-      of(entity)
-    ),
-
+    this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
   }
 
 }
 
 export interface StateBooks {
   lastUpdate: number;
-  ids: string[],
-  entities: {[bookId: string]: BooksModel};
+  // ids: string[],
+  // entities: {[bookId: string]: BooksModel};
 }
 
 export enum StateBooksActions {
@@ -217,3 +155,5 @@ export enum StateBooksActions {
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
 }
+
+export interface BookModelEntity extends BooksModel, ENTITY_MODEL_BASE {}

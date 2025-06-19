@@ -1,36 +1,45 @@
 import { Observable, of, Subject, tap } from "rxjs"
 import { StateStoreBase } from "./state.store.base";
+import { StateBooksActions } from "../components/books/store";
 
-export abstract class StateEffectsBase<STATE_MODEL> {
+export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL = any> {
 
-  protected abstract stateStoreReference: StateStoreBase<STATE_MODEL>;
+  protected abstract stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>;
 
   protected execEffects: {
     [key: string | number]: Subject<any>
   } = {}
 
-  setStateStoreReference(stateStoreReference: StateStoreBase<STATE_MODEL>){
+  setStateStoreReference(stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>){
     this.stateStoreReference = stateStoreReference;
     this.setExecEffects();
   }
 
   protected setExecEffects(){
-    Object.keys(this.effects).forEach(
+    [
+      ...Object.keys(this.stateStoreReference.actions),
+      ...Object.keys(this.stateStoreReference.entityActions)
+    ].forEach(
       effectName => {
         this.execEffects[effectName] = new Subject<any>();
-        this.execEffects[effectName].subscribe(
-          properties => {
-            if(this.effects[effectName]){
-              this.effects[effectName](properties)
-            }
-          }
-        )
       }
-    )
+    );
+    this.register();
   }
+
+  protected abstract register(): void;
 
   protected effects: {
     [key: string | number]: (properties: any) => void
+  }
+
+  registerEffect(
+    effectName: string | number,
+    effectFunction: (properties: any) => void
+  ){
+    this.execEffects[effectName].subscribe(
+      properties => effectFunction(properties)
+    )
   }
 
   runEffect(

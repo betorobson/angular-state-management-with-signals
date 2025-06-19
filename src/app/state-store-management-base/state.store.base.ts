@@ -1,12 +1,22 @@
 import { of, Subject } from "rxjs"
 import { StateEffectsBase } from "./state.effects.base";
-import { Signal } from "@angular/core";
+import { signal, Signal } from "@angular/core";
 
-export abstract class StateStoreBase<STATE_MODEL> {
+export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL> {
 
   protected STATE: Signal<STATE_MODEL>;
 
-  protected effects?: StateEffectsBase<STATE_MODEL>;
+  protected STATE_ENTITIES = signal<{
+    ids: string[],
+    entities: {
+      [id: string]: ENTITY_MODEL & ENTITY_MODEL_BASE
+    }
+  }>({
+    ids: [],
+    entities: {}
+  });
+
+  protected effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
 
   protected execReducers: {
     [key: string | number]: Subject<any>
@@ -20,19 +30,60 @@ export abstract class StateStoreBase<STATE_MODEL> {
     [key: string | number]: (properties?: any) => void
   }
 
+  protected entityReducers: {
+    [key: string | number]: (properties?: any) => void
+  } = {
+    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL & ENTITY_MODEL_BASE) => {
+      this.STATE_ENTITIES.update(
+        state => ({
+          ...state,
+          ids: [...state.ids, entity.id],
+          entities: {...state.entities, [entity.id]: entity}
+        })
+      )
+    },
+
+    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL & ENTITY_MODEL_BASE) => {
+      this.STATE_ENTITIES.update(
+        state => ({
+          ...state,
+          entities: {
+            ...state.entities,
+            [entity.id]: entity
+          }
+        })
+      )
+    },
+
+  }
+
+  entityActions = {
+    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
+      this.execReducer(StateStoreEntityActions.ADD_ENTITY, entity);
+    },
+    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
+      this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, entity);
+    },
+  }
+
   constructor(){
 
   }
 
   setExecReducers(){
 
-    Object.keys(this.actions).forEach(
+    [
+      ...Object.keys(this.actions),
+      ...Object.keys(this.entityActions)
+    ].forEach(
       reducerName => {
         this.execReducers[reducerName] = new Subject<any>();
         this.execReducers[reducerName].subscribe(
-          stateModel => {
+          data => {
             if(this.reducers[reducerName]){
-              this.reducers[reducerName](stateModel);
+              this.reducers[reducerName](data);
+            }else if(this.entityReducers[reducerName]){
+              this.entityReducers[reducerName](data);
             }
           }
         )
@@ -65,4 +116,8 @@ export enum EffectNameSuffixes {
 export enum StateStoreEntityActions {
   ADD_ENTITY = 'ADD_ENTITY',
   UPDATE_ENTITY = 'UPDATE_ENTITY',
+}
+
+export interface ENTITY_MODEL_BASE {
+  id: string
 }

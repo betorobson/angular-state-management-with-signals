@@ -1,8 +1,8 @@
 import { Observable, of, Subject, tap } from "rxjs"
-import { StateStoreBase } from "./state.store.base";
+import { ENTITY_MODEL_BASE, StateStoreBase } from "./state.store.base";
 import { StateBooksActions } from "../components/books/store";
 
-export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL = any> {
+export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
 
   protected abstract stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>;
 

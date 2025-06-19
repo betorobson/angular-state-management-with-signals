@@ -25,9 +25,8 @@ import { EffectNameSuffixes, StateStoreBase, StateStoreEntityActions } from '../
 @Injectable({
   providedIn: 'root',
 })
-export class StateBooksServiceEffects extends StateEffectsBase<StateBooks> {
+export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, BooksModel> {
 
-  // private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
   protected override stateStoreReference: StateBooksServiceStore;
 
   private testCount = 0;

@@ -2,14 +2,14 @@ import { of, Subject } from "rxjs"
 import { StateEffectsBase } from "./state.effects.base";
 import { signal, Signal } from "@angular/core";
 
-export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL> {
+export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
 
   protected STATE: Signal<STATE_MODEL>;
 
   protected STATE_ENTITIES = signal<{
     ids: string[],
     entities: {
-      [id: string]: ENTITY_MODEL & ENTITY_MODEL_BASE
+      [id: string]: ENTITY_MODEL
     }
   }>({
     ids: [],
@@ -33,7 +33,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL> {
   protected entityReducers: {
     [key: string | number]: (properties?: any) => void
   } = {
-    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL & ENTITY_MODEL_BASE) => {
+    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => ({
           ...state,
@@ -43,7 +43,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL> {
       )
     },
 
-    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL & ENTITY_MODEL_BASE) => {
+    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => ({
           ...state,

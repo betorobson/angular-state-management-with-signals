@@ -29,8 +29,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   protected override STATE = signal<StateBooks>({
     lastUpdate: 0,
-    // ids: [],
-    // entities: {}
   });
 
   constructor(){
@@ -77,30 +75,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
 
-    // ENTITY
-
-    // [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
-    //   this.STATE.update(
-    //     state => ({
-    //       ...state,
-    //       ids: [...state.ids, bookModel.id],
-    //       entities: {...state.entities, [bookModel.id]: bookModel}
-    //     })
-    //   )
-    // },
-
-    // [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
-    //   this.STATE.update(
-    //     state => ({
-    //       ...state,
-    //       entities: {
-    //         ...state.entities,
-    //         [bookModel.id]: bookModel
-    //       }
-    //     })
-    //   )
-    // },
-
   }
 
   ///////////////////// ACTIONS
@@ -122,16 +96,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.INCREMENT]: () => this.execReducer(StateBooksActions.INCREMENT),
 
-    // ENTITY
-
-    // [StateStoreEntityActions.ADD_ENTITY]: (bookModel: BooksModel) => {
-    //   this.execReducer(StateStoreEntityActions.ADD_ENTITY, bookModel);
-    // },
-
-    // [StateStoreEntityActions.UPDATE_ENTITY]: (bookModel: BooksModel) => {
-    //   this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, bookModel);
-    // },
-
   }
 
   addBook(book: BooksModel){
@@ -146,8 +110,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
 export interface StateBooks {
   lastUpdate: number;
-  // ids: string[],
-  // entities: {[bookId: string]: BooksModel};
 }
 
 export enum StateBooksActions {

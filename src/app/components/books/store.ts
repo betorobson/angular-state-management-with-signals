@@ -17,7 +17,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { BooksModel } from '../../api-services/books.service';
-import { EffectsNames, StateBooksServiceEffects } from './effects';
+import { StateBooksServiceEffects } from './effects';
 import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({

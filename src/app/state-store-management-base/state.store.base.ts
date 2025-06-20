@@ -44,6 +44,21 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
       )
     },
 
+    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
+      this.STATE_ENTITIES.update(
+        state => ({
+          ...state,
+          ids: [...state.ids, ...entities.map(entity => entity.id)],
+          entities: {
+            ...state.entities,
+            ...Object.fromEntries(
+              entities.map(entity => [entity.id, entity])
+            )
+          }
+        })
+      )
+    },
+
     [StateStoreEntityActions.REMOVE_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => {
@@ -77,7 +92,11 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
   entityActions = {
     [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
+      // [todo] criar forma automatizada para executar async
       this.execReducer(StateStoreEntityActions.ADD_ENTITY, entity);
+    },
+    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
+      this.execReducer(StateStoreEntityActions.ADD_ENTITIES, entities);
     },
     [StateStoreEntityActions.REMOVE_ENTITY]: (id: string) => {
       this.execReducer(StateStoreEntityActions.REMOVE_ENTITY, {id});
@@ -133,6 +152,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
 export enum StateStoreEntityActions {
   ADD_ENTITY = 'ADD_ENTITY',
+  ADD_ENTITIES = 'ADD_ENTITIES',
   REMOVE_ENTITY = 'REMOVE_ENTITY',
   UPDATE_ENTITY = 'UPDATE_ENTITY',
 }

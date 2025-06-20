@@ -1,5 +1,5 @@
 import { Observable, of, Subject, tap } from "rxjs"
-import { ENTITY_MODEL_BASE, StateStoreBase } from "./state.store.base";
+import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from "./state.store.base";
 import { StateBooksActions } from "../components/books/store";
 
 export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
@@ -35,10 +35,18 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
 
   registerEffect(
     effectName: string | number,
-    effectFunction: (properties: any) => void
+    effectFunction: (properties: any) => void,
+    observableToAsyncExecution?: Observable<any>
   ){
     this.execEffects[effectName].subscribe(
-      properties => effectFunction(properties)
+      properties => {
+        effectFunction(properties)
+        if(effectName === StateStoreEntityActions.ADD_ENTITY && observableToAsyncExecution){
+          observableToAsyncExecution.subscribe(
+            result => console.log(result)
+          )
+        }
+      }
     )
   }
 

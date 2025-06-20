@@ -87,7 +87,8 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
         this.stateAuthorsServiceStore
           .actions[StateAuthorsActions.INCREMENT_TOTAL_BOOKS](bookModel.authorId);
 
-      }
+      },
+      of([1,2,3])
     );
 
     this.registerEffect(

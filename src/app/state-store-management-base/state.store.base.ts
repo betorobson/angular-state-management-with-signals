@@ -92,7 +92,6 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
   entityActions = {
     [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
-      // [todo] criar forma automatizada para executar async
       this.execReducer(StateStoreEntityActions.ADD_ENTITY, entity);
     },
     [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
@@ -142,7 +141,9 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
         );
       }
 
-      this.execReducers[reducerName].next(properties);
+      if(this.execReducers[reducerName]){
+        this.execReducers[reducerName].next(properties);
+      }
 
     }
   }

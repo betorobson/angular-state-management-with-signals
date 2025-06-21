@@ -16,7 +16,7 @@ import {
 } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
-import { BooksModel } from '../../api-services/books.service';
+import { APIServiceBooks, BooksModel } from '../../api-services/books.service';
 import { StateAuthorsActions, StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
@@ -29,6 +29,8 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
   protected override stateStoreReference: StateBooksServiceStore;
   private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
+
+  private apiServiceBooks = inject(APIServiceBooks);
 
   register(){
 
@@ -51,6 +53,29 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
             )
         );
 
+      }
+    );
+
+    this.registerEffect(
+      StateBooksActions.ASYNC_ADD_ENTRY_API,
+      (bookModel: BooksModel) => {
+        this.runEffectAsyncPipe(
+          StateBooksActions.ASYNC_ADD_ENTRY_API,
+          this.apiServiceBooks.put(bookModel)
+        );
+      }
+    );
+
+    this.registerEffect(
+      `${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`,
+      (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY](bookModel)
+    );
+
+    this.registerEffect(
+      `${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`,
+      (error: any) => {
+        console.log(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, error);
+        alert(error)
       }
     );
 
@@ -87,8 +112,7 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
         this.stateAuthorsServiceStore
           .actions[StateAuthorsActions.INCREMENT_TOTAL_BOOKS](bookModel.authorId);
 
-      },
-      of([1,2,3])
+      }
     );
 
     this.registerEffect(

@@ -5,7 +5,17 @@ import { of, delay, tap, map, Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class APIServiceBooks {
-
+  put(bookModel: BooksModel){
+    return of(bookModel)
+      .pipe(
+        delay(500),
+        tap(result => {
+          if(/bob/.test(result.title)) {
+            throw new Error('Bob is not allowed')
+          }
+        })
+      )
+  }
 }
 
 export interface BooksModel {

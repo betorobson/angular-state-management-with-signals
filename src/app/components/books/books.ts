@@ -19,10 +19,10 @@ import { BooksModel } from '../../api-services/books.service';
         }
       </select>
       <input [formControl]="formGroup.controls['title']" />
-      <button
+\      <button
         type="submit"
         (click)="addBook()"
-        [disabled]="!formGroup.valid"
+        [disabled]="!formGroup.valid || dataAuthorsLoading()"
       >add</button>
       <button
         type="button"
@@ -35,6 +35,7 @@ import { BooksModel } from '../../api-services/books.service';
       |
       <button
         type="button"
+        [disabled]="dataAuthorsLoading()"
         (click)="addAuthor()"
       >Add Author</button>
       </form>
@@ -75,6 +76,7 @@ export class ListBooksComponent implements OnInit {
   private stateBooksServiceStore = inject(StateBooksServiceStore);
 
   dataAuthors = this.stateAuthorsServiceStore.selectors.selectAll;
+  dataAuthorsLoading = this.stateAuthorsServiceStore.selectors.loading;
 
   lastUpdate = this.stateBooksServiceStore.selectors.lastUpdate;
   data = this.stateBooksServiceStore.selectors.selectAll;

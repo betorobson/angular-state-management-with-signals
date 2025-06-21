@@ -16,7 +16,7 @@ import {
 } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
-import { BooksModel } from '../../api-services/books.service';
+import { APIServiceBooks, BooksModel } from '../../api-services/books.service';
 import { StateBooksServiceEffects } from './effects';
 import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
@@ -75,6 +75,9 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
 
+    [StateBooksActions.ASYNC_ADD_ENTRY_API]:
+      (book: BooksModel) => console.log(`REDUCER: ${StateBooksActions.ASYNC_ADD_ENTRY_API}`, book),
+
   }
 
   ///////////////////// ACTIONS
@@ -96,10 +99,15 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.INCREMENT]: () => this.execReducer(StateBooksActions.INCREMENT),
 
+    [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => this.execReducer(StateBooksActions.ASYNC_ADD_ENTRY_API, book),
+
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: BooksModel) => this.execReducer(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`, book),
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: BooksModel) => this.execReducer(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, book),
+
   }
 
   addBook(book: BooksModel){
-    this.entityActions[StateStoreEntityActions.ADD_ENTITY](book);
+    this.actions[StateBooksActions.ASYNC_ADD_ENTRY_API](book);
   }
 
   removeBook(book: BooksModel){
@@ -120,6 +128,7 @@ export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
+  ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API'
 }
 
 export interface BookModelEntity extends BooksModel, ENTITY_MODEL_BASE {}

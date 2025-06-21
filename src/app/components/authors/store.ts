@@ -30,11 +30,13 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   protected override effects = inject(StateAuthorsServiceEffects);
 
   protected override STATE = signal<StateAuthors>({
-    lastUpdate: 0
+    lastUpdate: 0,
+    loading: true
   });
 
   selectors = {
     selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
+    loading: computed(() => this.STATE().loading),
   }
 
   constructor(){
@@ -67,6 +69,14 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
         })
       )
     },
+    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: () => {
+      this.STATE.update(
+        state => ({
+          ...state,
+          loading: false
+        })
+      );
+    }
   }
 
   override actions = {
@@ -82,6 +92,7 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
 
 export interface StateAuthors {
   lastUpdate: number,
+  loading: boolean
 }
 
 export enum StateAuthorsActions {

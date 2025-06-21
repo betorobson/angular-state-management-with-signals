@@ -35,17 +35,11 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
 
   registerEffect(
     effectName: string | number,
-    effectFunction: (properties: any) => void,
-    observableToAsyncExecution?: Observable<any>
+    effectFunction: (properties: any) => void
   ){
     this.execEffects[effectName].subscribe(
       properties => {
         effectFunction(properties)
-        if(effectName === StateStoreEntityActions.ADD_ENTITY && observableToAsyncExecution){
-          observableToAsyncExecution.subscribe(
-            result => console.log(result)
-          )
-        }
       }
     )
   }

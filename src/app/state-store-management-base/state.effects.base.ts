@@ -58,8 +58,16 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
     result: Observable<any>
   ){
     result.subscribe(
-      result => this.stateStoreReference.actions[`${name}:SUCCESS`](result),
-      error => this.stateStoreReference.actions[`${name}:ERROR`](error)
+      result => {
+        if(this.stateStoreReference.actions[`${name}:SUCCESS`]){
+          this.stateStoreReference.actions[`${name}:SUCCESS`](result)
+        }
+      },
+      error => {
+        if(this.stateStoreReference.actions[`${name}:ERROR`]){
+          this.stateStoreReference.actions[`${name}:ERROR`](error)
+        }
+      }
     )
   }
 

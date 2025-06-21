@@ -42,6 +42,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   ///////////////////// SELECTORS
   selectors = {
+    rawState: computed(() => this.STATE()),
+    rawStateEntities: computed(() => this.STATE_ENTITIES()),
     selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
     filterRatingTitle: computed(() => this.STATE_ENTITIES().ids
       .filter(id => this.STATE_ENTITIES().entities[id].rating > 6)
@@ -59,9 +61,12 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     // [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
 
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => {
-      console.log('REDUCER: LOAD_DATA:SUCCESS', stateBooks);
-      this.STATE.update(state => ({...state, ...stateBooks}))
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: any) => {
+      console.log('REDUCER: LOAD_DATA:SUCCESS', data);
+      if(data){
+        this.STATE.update(() => ({...data.stateBooks}))
+        this.STATE_ENTITIES.update(() => ({...data.stateBooksEntities}))
+      }
     },
 
     [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {

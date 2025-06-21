@@ -37,22 +37,10 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     this.registerEffect(
       StateBooksActions.LOAD_DATA,
       () => {
-
-        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](-1);
-
         this.runEffectAsyncPipe(
           StateBooksActions.LOAD_DATA,
-          of({lastUpdate: 1234})
-            .pipe(
-              delay(2000),
-              tap(result => {
-                if(result.lastUpdate < 1000) {
-                  throw new Error('too low');
-                }
-              })
-            )
+          this.apiServiceBooks.get()
         );
-
       }
     );
 
@@ -81,7 +69,7 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
     this.registerEffect(
       `${StateBooksActions.LOAD_DATA}:SUCCESS`,
-      (result: {lastUpdate: number}) => {
+      (result: any) => {
         console.log('EFFECT: LOAD DATA SUCCESS', result);
       }
     );
@@ -97,6 +85,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateBooksActions.SET_LAST_UPDATE,
       (properties: any) => {
         console.log('EFFECT: SET_LAST_UPDATE', properties)
+        this.runEffectAsyncPipe(
+          StateBooksActions.SET_LAST_UPDATE,
+          this.apiServiceBooks.saveAllBooks(
+            this.stateStoreReference.selectors.rawState(),
+            this.stateStoreReference.selectors.rawStateEntities(),
+          )
+        );
       }
     );
 
@@ -106,8 +101,9 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateStoreEntityActions.ADD_ENTITY,
       (bookModel: BooksModel) => {
 
-        this.stateStoreReference.actions[StateBooksActions.INCREMENT]();
-
+        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
+          new Date().getTime()
+        );
 
         this.stateAuthorsServiceStore
           .actions[StateAuthorsActions.INCREMENT_TOTAL_BOOKS](bookModel.authorId);

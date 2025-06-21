@@ -91,47 +91,46 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
   }
 
   entityActions = {
-    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
-      this.execReducer(StateStoreEntityActions.ADD_ENTITY, entity);
-    },
-    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
-      this.execReducer(StateStoreEntityActions.ADD_ENTITIES, entities);
-    },
-    [StateStoreEntityActions.REMOVE_ENTITY]: (id: string) => {
-      this.execReducer(StateStoreEntityActions.REMOVE_ENTITY, {id});
-    },
-    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
-      this.execReducer(StateStoreEntityActions.UPDATE_ENTITY, entity);
-    },
+    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {},
+    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {},
+    [StateStoreEntityActions.REMOVE_ENTITY]: (id: string) => {},
+    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {},
   }
 
   constructor(){
 
   }
 
-  setExecReducers(){
-
-    [
-      ...Object.keys(this.actions),
-      ...Object.keys(this.entityActions)
-    ].forEach(
-      reducerName => {
-        this.execReducers[reducerName] = new Subject<any>();
-        this.execReducers[reducerName].subscribe(
-          data => {
-            if(this.reducers[reducerName]){
-              this.reducers[reducerName](data);
-            }else if(this.entityReducers[reducerName]){
-              this.entityReducers[reducerName](data);
-            }
-          }
-        )
-      }
-    );
-
+  registerActions(){
+    this.setActionRecuderExec(this.actions);
+    this.setActionRecuderExec(this.entityActions);
   }
 
-  execReducer(reducerName: string | number, properties?: any){
+  setActionRecuderExec(actions: {[actionName: string]: (data: any) => void}){
+    Object.entries(actions).forEach(([actionName, actionFunction]) => {
+
+      this.execReducers[actionName] = new Subject<any>();
+      this.execReducers[actionName].subscribe(
+        data => {
+          if(this.reducers[actionName]){
+            this.reducers[actionName](data);
+          }else if(this.entityReducers[actionName]){
+            this.entityReducers[actionName](data);
+          }
+        }
+      )
+
+      actions[actionName] = (data: any) => {
+        if(actionFunction){
+          actionFunction(data);
+        }
+        this.dispatchReducer(actionName, data);
+      }
+
+    })
+  }
+
+  dispatchReducer(reducerName: string | number, properties?: any){
     if(this.execReducers[reducerName]){
 
       if(this.effects){
@@ -147,7 +146,6 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
 
     }
   }
-
 
 }
 

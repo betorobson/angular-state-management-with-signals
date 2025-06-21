@@ -36,7 +36,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     super();
 
     this.effects.setStateStoreReference(this);
-    this.setExecReducers();
+    this.registerActions();
 
   }
 
@@ -57,7 +57,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   protected override reducers = {
 
-    [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
+    // [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
 
     [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => {
       console.log('REDUCER: LOAD_DATA:SUCCESS', stateBooks);
@@ -69,14 +69,14 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
       this.STATE.update(state => ({...state, lastUpdate: 1}))
     },
 
-    [StateBooksActions.SET_LAST_UPDATE]: ({lastUpdate}: Partial<StateBooks>) => {
+    [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.STATE.update(state => ({...state, lastUpdate}))
     },
 
     [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
 
-    [StateBooksActions.ASYNC_ADD_ENTRY_API]:
-      (book: BooksModel) => console.log(`REDUCER: ${StateBooksActions.ASYNC_ADD_ENTRY_API}`, book),
+    // [StateBooksActions.ASYNC_ADD_ENTRY_API]:
+    //   (book: BooksModel) => console.log(`REDUCER: ${StateBooksActions.ASYNC_ADD_ENTRY_API}`, book),
 
   }
 
@@ -84,25 +84,19 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   override actions = {
 
-    [StateBooksActions.LOAD_DATA]: () => this.execReducer(StateBooksActions.LOAD_DATA),
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => this.execReducer(`${StateBooksActions.LOAD_DATA}:SUCCESS`, stateBooks),
-    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => this.execReducer(`${StateBooksActions.LOAD_DATA}:ERROR`, error),
+    [StateBooksActions.LOAD_DATA]: () => console.log('ACTION: StateBooksActions.LOAD_DATA'),
 
-    [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
-      this.execReducer(
-        StateBooksActions.SET_LAST_UPDATE,
-        {
-          lastUpdate
-        }
-      );
-    },
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => {},
+    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {},
 
-    [StateBooksActions.INCREMENT]: () => this.execReducer(StateBooksActions.INCREMENT),
+    [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {},
 
-    [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => this.execReducer(StateBooksActions.ASYNC_ADD_ENTRY_API, book),
+    [StateBooksActions.INCREMENT]: () => {},
 
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: BooksModel) => this.execReducer(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`, book),
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: BooksModel) => this.execReducer(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, book),
+    [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => {},
+
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: BooksModel) => {},
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: BooksModel) => {},
 
   }
 
@@ -131,4 +125,3 @@ export enum StateBooksActions {
   ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API'
 }
 
-export interface BookModelEntity extends BooksModel, ENTITY_MODEL_BASE {}

@@ -37,13 +37,15 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   selectors = {
     selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
     loading: computed(() => this.STATE().loading),
+    // [todo] this does not look safe
+    getAuthor: (id: string) => computed(() => this.STATE_ENTITIES().entities[id]),
   }
 
   constructor(){
 
     super();
     this.effects.setStateStoreReference(this);
-    this.setExecReducers();
+    this.registerActions();
 
     this.actions[StateAuthorsActions.LOAD_DATA]();
 
@@ -80,12 +82,11 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   }
 
   override actions = {
-    [StateAuthorsActions.LOAD_DATA]: () => this.execReducer(StateAuthorsActions.LOAD_DATA),
-    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: (authors: AuthorsModel[]) => this.execReducer(`${StateAuthorsActions.LOAD_DATA}:SUCCESS`, authors),
-    [`${StateAuthorsActions.LOAD_DATA}:ERROR`]: (error: any) => this.execReducer(`${StateAuthorsActions.LOAD_DATA}:ERROR`, error),
+    [StateAuthorsActions.LOAD_DATA]: () => {},
+    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: (authors: AuthorsModel[]) => {},
+    [`${StateAuthorsActions.LOAD_DATA}:ERROR`]: (error: any) => {},
 
-    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]
-      : (authorId: string) => this.execReducer(StateAuthorsActions.INCREMENT_TOTAL_BOOKS, authorId),
+    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]: (authorId: string) => {},
   }
 
 }

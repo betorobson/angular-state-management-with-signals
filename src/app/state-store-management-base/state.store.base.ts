@@ -133,15 +133,15 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
   dispatchReducer(reducerName: string | number, properties?: any){
     if(this.execReducers[reducerName]){
 
+      if(this.execReducers[reducerName]){
+        this.execReducers[reducerName].next(properties);
+      }
+
       if(this.effects){
         this.effects.runEffect(
           reducerName,
           properties
         );
-      }
-
-      if(this.execReducers[reducerName]){
-        this.execReducers[reducerName].next(properties);
       }
 
     }

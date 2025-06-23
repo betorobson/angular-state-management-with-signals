@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { APIServiceBooks, BooksModel } from '../../api-services/books.service';
 import { StateBooksServiceEffects } from './effects';
-import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
+import { ENTITY_MODEL_BASE, StateStoreActionsRunners, StateStoreBase, StateStoreEntityActions, StateStoreEntries } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
@@ -32,18 +32,16 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
   });
 
   constructor(){
-
     super();
-
-    this.effects.setStateStoreReference(this);
-    this.registerActions();
-
+    this.init();
   }
 
   ///////////////////// SELECTORS
   selectors = {
-    rawState: computed(() => this.STATE()),
-    rawStateEntities: computed(() => this.STATE_ENTITIES()),
+    rawData: (): StateBooksRawData => ({
+      stateBooks: this.STATE(),
+      stateBooksEntities: this.STATE_ENTITIES()
+    }),
     selectAll: computed(() => this.STATE_ENTITIES().ids.map(id => this.STATE_ENTITIES().entities[id])),
     filterRatingTitle: computed(() => this.STATE_ENTITIES().ids
       .filter(id => this.STATE_ENTITIES().entities[id].rating > 6)
@@ -59,9 +57,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   protected override reducers = {
 
-    // [StateBooksActions.LOAD_DATA]: () => console.log('LOAD_DATA DO NOTHING'),
-
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: any) => {
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: StateBooksRawData) => {
       console.log('REDUCER: LOAD_DATA:SUCCESS', data);
       if(data){
         this.STATE.update(() => ({...data.stateBooks}))
@@ -80,9 +76,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
 
-    // [StateBooksActions.ASYNC_ADD_ENTRY_API]:
-    //   (book: BooksModel) => console.log(`REDUCER: ${StateBooksActions.ASYNC_ADD_ENTRY_API}`, book),
-
   }
 
   ///////////////////// ACTIONS
@@ -91,7 +84,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.LOAD_DATA]: () => console.log('ACTION: StateBooksActions.LOAD_DATA'),
 
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (stateBooks: Partial<StateBooks>) => {},
+    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: StateBooksRawData) => {},
     [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {},
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {},
@@ -123,10 +116,14 @@ export interface StateBooks {
   lastUpdate: number;
 }
 
+export interface StateBooksRawData {
+  stateBooks: StateBooks,
+  stateBooksEntities: StateStoreEntries<BooksModel>
+}
+
 export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
   ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API'
 }
-

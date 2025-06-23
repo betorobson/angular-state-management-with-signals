@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { of, delay, tap, map, Observable } from 'rxjs';
-import { StateBooks } from '../components/books/store';
+import { StateBooks, StateBooksRawData } from '../components/books/store';
 
 @Injectable({
   providedIn: 'root',
@@ -18,19 +18,16 @@ export class APIServiceBooks {
       console.log(error);
     }
 
-    return of(data)
+    return of<StateBooksRawData>(data)
       .pipe(delay(500))
 
   }
 
-  saveAllBooks(stateBooks: StateBooks, stateBooksEntities: any){
-    return of(stateBooks)
+  saveAllBooks(data: StateBooksRawData){
+    return of(data)
       .pipe(
         delay(500),
-        tap(() => window.localStorage.setItem('APIServiceBooks', JSON.stringify({
-          stateBooks,
-          stateBooksEntities
-        })))
+        tap(() => window.localStorage.setItem('APIServiceBooks', JSON.stringify(data)))
       )
   }
 

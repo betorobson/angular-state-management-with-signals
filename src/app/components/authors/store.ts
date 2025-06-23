@@ -44,8 +44,7 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   constructor(){
 
     super();
-    this.effects.setStateStoreReference(this);
-    this.registerActions();
+    this.init();
 
     this.actions[StateAuthorsActions.LOAD_DATA]();
 

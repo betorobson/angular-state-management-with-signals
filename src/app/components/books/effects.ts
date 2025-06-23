@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { APIServiceItems, ItemModel } from '../../api-services/items.service';
 import { APIServiceBooks, BooksModel } from '../../api-services/books.service';
 import { StateAuthorsActions, StateAuthorsServiceStore } from '../authors/store';
-import { StateBooks, StateBooksActions, StateBooksServiceStore } from './store';
+import { StateBooks, StateBooksActions, StateBooksRawData, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
 import { StateStoreBase, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
@@ -69,7 +69,7 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
     this.registerEffect(
       `${StateBooksActions.LOAD_DATA}:SUCCESS`,
-      (result: any) => {
+      (result: StateBooksRawData) => {
         console.log('EFFECT: LOAD DATA SUCCESS', result);
       }
     );
@@ -88,8 +88,7 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
         this.runEffectAsyncPipe(
           StateBooksActions.SET_LAST_UPDATE,
           this.apiServiceBooks.saveAllBooks(
-            this.stateStoreReference.selectors.rawState(),
-            this.stateStoreReference.selectors.rawStateEntities(),
+            this.stateStoreReference.selectors.rawData()
           )
         );
       }
@@ -114,7 +113,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     this.registerEffect(
       StateStoreEntityActions.REMOVE_ENTITY,
       (book: Pick<BooksModel, 'id'>) => {
-        console.log('EFFECT: REMOVE_ENTITY', book)
+        console.log('EFFECT: REMOVE_ENTITY', book);
+        this.runEffectAsyncPipe(
+          StateStoreEntityActions.REMOVE_ENTITY,
+          this.apiServiceBooks.saveAllBooks(
+            this.stateStoreReference.selectors.rawData()
+          )
+        )
       }
     );
 

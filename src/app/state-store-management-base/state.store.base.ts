@@ -2,23 +2,21 @@ import { of, Subject } from "rxjs"
 import { StateEffectsBase } from "./state.effects.base";
 import { signal, Signal } from "@angular/core";
 
-export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
+export abstract class StateStoreBase<
+  STATE_MODEL,
+  ENTITY_MODEL extends ENTITY_MODEL_BASE
+> {
 
   protected STATE: Signal<STATE_MODEL>;
 
-  protected STATE_ENTITIES = signal<{
-    ids: string[],
-    entities: {
-      [id: string]: ENTITY_MODEL
-    }
-  }>({
+  protected STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
     ids: [],
     entities: {}
   });
 
   protected effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
 
-  protected execReducers: {
+  private execReducers: {
     [key: string | number]: Subject<any>
   } = {}
 
@@ -30,7 +28,7 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
     [key: string | number]: (properties?: any) => void
   } = {}
 
-  protected entityReducers: {
+  private entityReducers: {
     [key: string | number]: (properties?: any) => void
   } = {
 
@@ -59,18 +57,21 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
       )
     },
 
-    [StateStoreEntityActions.REMOVE_ENTITY]: (entity: ENTITY_MODEL) => {
+    [StateStoreEntityActions.REMOVE_ENTITY]: (entityID: string) => {
+      if(!this.STATE_ENTITIES().ids.includes(entityID)){
+        throw new Error('entityID does not exists');
+      }
       this.STATE_ENTITIES.update(
         state => {
-          state.entities[entity.id] = null;
-          delete state.entities[entity.id]
+          state.entities[entityID] = null;
+          delete state.entities[entityID]
           return {
             ...state,
             ids: [
-              ...state.ids.slice(0,state.ids.indexOf(entity.id)),
-              ...state.ids.slice(state.ids.indexOf(entity.id)+1)
+              ...state.ids.slice(0,state.ids.indexOf(entityID)),
+              ...state.ids.slice(state.ids.indexOf(entityID)+1)
             ],
-            entities: {...state.entities, [entity.id]: entity}
+            entities: {...state.entities}
           }
         }
       )
@@ -97,11 +98,10 @@ export abstract class StateStoreBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MO
     [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {},
   }
 
-  constructor(){
+  constructor(){}
 
-  }
-
-  registerActions(){
+  init(){
+    this.effects.setStateStoreReference(this);
     this.setActionRecuderExec(this.actions);
     this.setActionRecuderExec(this.entityActions);
   }
@@ -158,4 +158,15 @@ export enum StateStoreEntityActions {
 
 export interface ENTITY_MODEL_BASE {
   id: string
+}
+
+export interface StateStoreActionsRunners {
+  [key: string | number]: (data: string) => void;
+}
+
+export interface StateStoreEntries<ENTITY_MODEL> {
+  ids: string[],
+  entities: {
+    [id: string]: ENTITY_MODEL
+  }
 }

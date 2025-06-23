@@ -14,24 +14,21 @@ export abstract class StateStoreBase<
     entities: {}
   });
 
-  protected effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
-
-  private execReducers: {
-    [key: string | number]: Subject<any>
-  } = {}
-
   actions: {
     [key: string | number]: (properties?: any) => void;
   } = {}
 
-  protected reducers: {
-    [key: string | number]: (properties?: any) => void
+  protected effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
+
+  private dispatchReducersObservable: {
+    [key: string | number]: Subject<any>
   } = {}
 
-  private entityReducers: {
-    [key: string | number]: (properties?: any) => void
-  } = {
+  private reducerRunners: {
+    [key: string | number]: (data: any) => void
+  } = {}
 
+  entityActions = {
     [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => ({
@@ -41,7 +38,6 @@ export abstract class StateStoreBase<
         })
       )
     },
-
     [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
       this.STATE_ENTITIES.update(
         state => ({
@@ -56,7 +52,6 @@ export abstract class StateStoreBase<
         })
       )
     },
-
     [StateStoreEntityActions.REMOVE_ENTITY]: (entityID: string) => {
       if(!this.STATE_ENTITIES().ids.includes(entityID)){
         throw new Error('entityID does not exists');
@@ -76,7 +71,6 @@ export abstract class StateStoreBase<
         }
       )
     },
-
     [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
       this.STATE_ENTITIES.update(
         state => ({
@@ -88,59 +82,46 @@ export abstract class StateStoreBase<
         })
       )
     },
-
-  }
-
-  entityActions = {
-    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {},
-    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {},
-    [StateStoreEntityActions.REMOVE_ENTITY]: (id: string) => {},
-    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {},
   }
 
   constructor(){}
 
   init(){
-    this.effects.setStateStoreReference(this);
+    if(this.effects){
+      this.effects.setStateStoreReference(this);
+    }
     this.setActionRecuderExec(this.actions);
     this.setActionRecuderExec(this.entityActions);
   }
 
-  setActionRecuderExec(actions: {[actionName: string]: (data: any) => void}){
+  private setActionRecuderExec(actions: {[actionName: string]: (data: any) => void}){
     Object.entries(actions).forEach(([actionName, actionFunction]) => {
 
-      this.execReducers[actionName] = new Subject<any>();
-      this.execReducers[actionName].subscribe(
-        data => {
-          if(this.reducers[actionName]){
-            this.reducers[actionName](data);
-          }else if(this.entityReducers[actionName]){
-            this.entityReducers[actionName](data);
-          }
-        }
+      this.reducerRunners[actionName] = actionFunction;
+
+      this.dispatchReducersObservable[actionName] = new Subject<any>();
+      this.dispatchReducersObservable[actionName].subscribe(
+        data => this.reducerRunners[actionName](data)
       )
 
       actions[actionName] = (data: any) => {
-        if(actionFunction){
-          actionFunction(data);
-        }
         this.dispatchReducer(actionName, data);
       }
 
     })
   }
 
-  dispatchReducer(reducerName: string | number, properties?: any){
-    if(this.execReducers[reducerName]){
+  private dispatchReducer(reducerName: string | number, data?: any){
+    if(this.dispatchReducersObservable[reducerName]){
 
-      if(this.execReducers[reducerName]){
-        this.execReducers[reducerName].next(properties);
+      if(this.dispatchReducersObservable[reducerName]){
+        this.dispatchReducersObservable[reducerName].next(data);
       }
 
       if(this.effects){
         this.effects.runEffect(
           reducerName,
-          properties
+          data
         );
       }
 

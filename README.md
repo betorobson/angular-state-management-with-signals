@@ -1,169 +1,193 @@
-# App
+# Uma abordagem simplificada de controle de estado com Signals no Angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.1.
+Durante meus estudos recentes sobre controle de estado no Angular, me propus a explorar alternativas mais simples e diretas do que soluções robustas e, muitas vezes, complexas como o NgRX ou Redux. Meu objetivo era manter os princípios fundamentais de _state management_ — como ações, efeitos, reducers e store — mas utilizando os recursos mais modernos do Angular, como os _signals_, que vêm ganhando força com as atualizações mais recentes do framework.
 
-## Development server
+Para embasar esse estudo, analisei dois artigos fundamentais:
 
-To start a local development server, run:
+ - [State Management with RxJS and Signals — Modern Angular](https://modernangular.com/articles/state-management-with-rxjs-and-signals)
+Esse artigo trata da integração entre RxJS e signals, apontando caminhos para uma arquitetura de estado mais fluida e reativa
+ - [Common Terms in NgRx and State Management — Plain English (Medium)](https://javascript.plainenglish.io/common-terms-in-ngrx-and-state-management-for-angular-beginners-c03e49e140bc)
+Esse outro fornece uma introdução clara aos conceitos principais do NgRX e suas estruturas, como actions, selectors e reducers, que me ajudaram a entender o que realmente deveria ser mantido em uma solução mais enxuta.
 
-```bash
-ng serve
-```
+Com base nesse conhecimento, desenvolvi uma classe abstrata em TypeScript que funciona como uma **State Store Base**. Qualquer componente Angular pode passar a ter controle de estado de forma isolada e organizada, bastando criar um **Angular Service** que estenda essa classe base.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Apesar de estar em uma fase inicial, a solução já provou ser eficaz, e considero o seu uso extremamente simples e intuitivo. Ao invés de depender de uma biblioteca externa cheia de convenções rígidas, minha proposta permite que o próprio desenvolvedor controle sua estrutura de estado com flexibilidade, clareza e sem sair dos padrões já conhecidos de _state management_.
 
-## Code scaffolding
+A classe implementa os conceitos de **Actions**, **Effects**, **Reducer** e **Store**, mas de forma desacoplada e minimalista. O uso de _signals_ como mecanismo central de reatividade torna o controle de estado mais leve e integrado ao Angular moderno, evitando a verbosidade e o _boilerplate_ de bibliotecas como o NgRX.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Compartilhei um exemplo básico dessa implementação no meu [GitHub](#), que, embora ainda esteja cru, será gradualmente aprimorado com documentação mais detalhada e exemplos práticos. Acredito que essa abordagem possa ajudar outros desenvolvedores que, como eu, buscam soluções mais simples e eficazes para controle de estado em aplicações Angular.
 
-```bash
-ng generate component component-name
-```
+Em resumo, este estudo reforça minha crença de que é possível construir sistemas escaláveis e bem estruturados sem abrir mão da simplicidade. A comunidade Angular está evoluindo rapidamente, e acredito que ideias como essa têm espaço para crescer e amadurecer ainda mais.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-
-## References
-https://modernangular.com/articles/state-management-with-rxjs-and-signals
-https://sergeygultyayev.medium.com/5-mistakes-developers-make-when-using-signals-in-angular-159dee1a0b26
-https://angular.love/breakthrough-in-state-management-discover-the-simplicity-of-signal-store-part-1
-https://medium.com/strands-tech-corner/reduce-boilerplate-with-redux-toolkit-d56047455d63
-https://javascript.plainenglish.io/common-terms-in-ngrx-and-state-management-for-angular-beginners-c03e49e140bc
-https://blog.flotes.app/posts/angular-fine-grain-reactivity
+Acredito que o Angular, com a introdução de Signals, criou um movimento muito forte para programação reativa com controle de estado. Além disso, o Angular pode ser configurado sem o uso do Zone.js, o que torna tudo baseado em Signals — ou seja, um bom controle de estado precisa ser implementado. Mas, nesse momento, ainda prefiro ter o melhor dos dois mundos, seja controlando estado com Signals ou declarando propriedades no componente e referenciando no template.
 
 ---
-To update the parent state when an entity within an NgRx Entity state changes, you'll typically follow these steps:
 
-1. Define Actions
-Create specific actions for updating the parent state. These actions should clearly describe the changes you want to make to the parent state. For example:
-TypeScript
-```
-// parent.actions.ts
-import { createAction, props } from '@ngrx/store';
+## Exemplo básico de uso do State Store Base
 
-export const updateParentState = createAction(
-  '[Parent] Update Parent State',
-  props<{ parentProperty: any }>() // Adjust type as needed
-);
-```
-2. Update Reducer
-In the parent reducer, handle the new action to update the necessary properties of the parent state.
-TypeScript
-```
-// parent.reducer.ts
-import { createReducer, on } from '@ngrx/store';
-import { updateParentState } from './parent.actions';
+A seguir, um exemplo simplificado de como utilizar a `StateStoreBase` em um `Angular Service`:
 
-export interface ParentState {
-  parentProperty: any; // Adjust type as needed
+```ts
+// store.ts
+import { Injectable, signal, computed, inject} from '@angular/core';
+import { StateStoreBase } from '../../state-store-management-base/state.store.base';
+import { StateCounterServiceEffects } from './effects';
+import { APIServiceCounterGETResponse } from '../../api-services/counter.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class CounterStoreService extends StateStoreBase<StateCounterModel, any> {
+
+  protected override effects = inject(StateCounterServiceEffects);
+
+  protected override STATE = signal<StateCounterModel>({
+    count: 0,
+    message: ''
+  });
+
+  constructor(){
+    super();
+    this.init();
+  }
+
+  ///////////////////// SELECTORS
+  selectors = {
+    count: computed(() => this.STATE().count),
+    message: computed(() => this.STATE().message),
+  }
+
+  ///////////////////// ACTIONS
+
+  override actions = {
+
+    [StateCounterActions.INCREMENT]: () => {
+      this.STATE.update(state => ({...state, count: state.count + 1}));
+    },
+
+    [StateCounterActions.DECREMENT]: () => {
+      this.STATE.update(state => ({...state, count: state.count - 1}));
+    },
+
+    [StateCounterActions.RESET]: () => {
+      this.STATE.update(state => ({...state, count: 0}));
+    },
+
+    [StateCounterActions.GET_API]: (count: number) => {},
+
+    [`${StateCounterActions.GET_API}:SUCCESS`]: (response: APIServiceCounterGETResponse) => {
+      this.STATE.update(state => ({...state, message: response.message}));
+    },
+
+    [`${StateCounterActions.GET_API}:ERROR`]: (error: ErrorEvent) => {
+      this.STATE.update(state => ({...state, message: error.message}));
+    },
+
+  }
+
 }
 
-export const initialState: ParentState = {
-  parentProperty: null,
-};
-
-export const parentReducer = createReducer(
-  initialState,
-  on(updateParentState, (state, { parentProperty }) => ({
-    ...state,
-    parentProperty: parentProperty,
-  }))
-);
-```
-3. Dispatch Action from Entity Reducer or Effect
-When an entity is updated, you need to dispatch the updateParentState action. This can be done in a few ways:
-Within the entity reducer:
-If the entity update directly triggers a change in the parent state, you can dispatch the action directly from the entity reducer.
-Using an effect:
-If the parent state update depends on the updated entity or some logic, it's recommended to use an effect to handle the update.
-TypeScript
-```
-// entity.effects.ts
-import { Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { tap, withLatestFrom } from 'rxjs/operators';
-import { updateEntity } from './entity.actions'; // Example entity update action
-import { updateParentState } from './parent.actions';
-import { selectEntity } from './entity.selectors'; // Example entity selector
-import { ParentState } from './parent.reducer';
-
-@Injectable()
-export class EntityEffects {
-  updateParentState$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(updateEntity), // Replace with your entity update action
-      withLatestFrom(this.store.select(selectEntity)), // Select updated entity
-      tap(([action, entity]) => {
-        // Perform logic to determine new parent state
-        const parentProperty = entity.someProperty; // Example logic
-        this.store.dispatch(updateParentState({ parentProperty }));
-      })
-    ), {dispatch: false}
-  );
-
-  constructor(
-    private actions$: Actions,
-    private store: Store<{ parent: ParentState }>
-  ) {}
+export interface StateCounterModel {
+  count: number;
+  message: string;
 }
-```
-4. Select Parent State
-In the components or services that need the parent state, use a selector to access it.
-TypeScript
-```
-// parent.selectors.ts
-import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { ParentState } from './parent.reducer';
 
-export const selectParentState = createFeatureSelector<ParentState>('parent'); // Use your feature name
+export enum StateCounterActions {
+  INCREMENT = 'INCREMENT',
+  DECREMENT = 'DECREMENT',
+  RESET = 'RESET',
+  GET_API = 'GET_API'
+}
 
-export const selectParentProperty = createSelector(
-  selectParentState,
-  (state) => state.parentProperty
-);
 ```
-Key Considerations:
-Immutability: Ensure that your reducers update the state immutably, creating new state objects rather than modifying existing ones.
-Effects: Use effects for side effects, such as API calls or complex logic, to keep reducers pure.
-Selectors: Use selectors to efficiently access and derive data from the store.
-Performance: Avoid complex logic in reducers. Keep them simple and focused on state updates.
-Clear Actions: Use clear action names to describe the changes you are making.
-Normalization: Consider normalizing your data to avoid issues with nested or hierarchical data structures.
-By following these steps, you can effectively update parent state based on changes to entities within your NgRx store.
+
+Exemplo de effects enviando o dado para o servidor de forma assíncrona e depois executando as actions de sucesso ou erro dependendo da resposta.
+```ts
+// effects.ts
+import { Injectable, inject} from '@angular/core';
+import { StateAuthorsServiceStore } from '../authors/store';
+import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
+import { CounterStoreService, StateCounterActions, StateCounterModel } from './store';
+import { APIServiceCounter } from '../../api-services/counter.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class StateCounterServiceEffects extends StateEffectsBase<StateCounterModel, any> {
+
+  protected override stateStoreReference: CounterStoreService;
+  private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
+
+  private apiServiceCounter = inject(APIServiceCounter);
+
+  register(){
+
+    this.registerEffect(
+      StateCounterActions.INCREMENT,
+      () => {
+        this.stateStoreReference.actions[StateCounterActions.GET_API](
+          this.stateStoreReference.selectors.count()
+        );
+      }
+    );
+
+    this.registerEffect(
+      StateCounterActions.GET_API,
+      (count: number) => {
+        this.runEffectAsyncPipe(
+          StateCounterActions.GET_API,
+          this.apiServiceCounter.get(count)
+        );
+      }
+    );
+
+  }
+
+}
+
+```
+
+No componente, o uso fica simples e direto:
+```ts
+// counter.ts
+import { Component, inject } from '@angular/core';
+import { CounterStoreService, StateCounterActions } from './store';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-counter',
+  imports: [CommonModule],
+  template: `
+    <div>Valor atual: {{ count() }}</div>
+    <div>Mensagem: {{ message() }}</div>
+    <button (click)="increment()">Incrementar</button>
+    <button (click)="decrement()">Decrementar</button>
+    <button (click)="reset()">Resetar</button>
+  `,
+})
+export class AppCounterComponent {
+
+  private counterStoreService = inject(CounterStoreService);
+
+  count = this.counterStoreService.selectors.count;
+  message = this.counterStoreService.selectors.message;
+
+  increment(){
+    this.counterStoreService.actions[StateCounterActions.INCREMENT]();
+  }
+
+  decrement(){
+    this.counterStoreService.actions[StateCounterActions.DECREMENT]();
+  }
+
+  reset(){
+    this.counterStoreService.actions[StateCounterActions.RESET]();
+  }
+
+}
+
+
+```
+Esse exemplo simples mostra como a arquitetura baseada em signals e uma StateStoreBase pode fornecer uma estrutura leve, intuitiva e eficaz para gerenciar estado sem a complexidade de bibliotecas como NgRX.
+
+Caso deseje contribuir, sugerir melhorias ou acompanhar a evolução desse estudo, fique à vontade para visitar o repositório e abrir issues ou pull requests.

@@ -53,9 +53,11 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     lastUpdate: computed(() => this.STATE().lastUpdate),
   }
 
-  ///////////////////// REDUCERS
+  ///////////////////// ACTIONS
 
-  protected override reducers = {
+  override actions = {
+
+    [StateBooksActions.LOAD_DATA]: () => console.log('ACTION: StateBooksActions.LOAD_DATA'),
 
     [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: StateBooksRawData) => {
       console.log('REDUCER: LOAD_DATA:SUCCESS', data);
@@ -71,25 +73,12 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     },
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
-      this.STATE.update(state => ({...state, lastUpdate}))
+      this.STATE.update(state => ({...state, lastUpdate}));
     },
 
-    [StateBooksActions.INCREMENT]: () => this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1})),
-
-  }
-
-  ///////////////////// ACTIONS
-
-  override actions = {
-
-    [StateBooksActions.LOAD_DATA]: () => console.log('ACTION: StateBooksActions.LOAD_DATA'),
-
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: StateBooksRawData) => {},
-    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {},
-
-    [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {},
-
-    [StateBooksActions.INCREMENT]: () => {},
+    [StateBooksActions.INCREMENT]: () => {
+      this.STATE.update(state => ({...state, lastUpdate: state.lastUpdate+1}));
+    },
 
     [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => {},
 

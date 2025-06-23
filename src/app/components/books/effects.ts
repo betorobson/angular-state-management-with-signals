@@ -54,13 +54,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       }
     );
 
-    this.registerEffect(
-      `${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`,
+    this.registerAsyncEffectOnSuccess(
+      `${StateBooksActions.ASYNC_ADD_ENTRY_API}`,
       (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY](bookModel)
     );
 
-    this.registerEffect(
-      `${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`,
+    this.registerAsyncEffectOnError(
+      `${StateBooksActions.ASYNC_ADD_ENTRY_API}`,
       (error: any) => {
         console.log(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, error);
         alert(error)

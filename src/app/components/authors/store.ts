@@ -54,7 +54,18 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
     this.entityActions[StateStoreEntityActions.ADD_ENTITY](author);
   }
 
-  protected override reducers = {
+  override actions = {
+    [StateAuthorsActions.LOAD_DATA]: () => {},
+    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: (authors: AuthorsModel[]) => {
+      this.STATE.update(
+        state => ({
+          ...state,
+          loading: false
+        })
+      );
+    },
+    [`${StateAuthorsActions.LOAD_DATA}:ERROR`]: (error: any) => {},
+
     [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]: (authorId: string) => {
       console.log(StateAuthorsActions.INCREMENT_TOTAL_BOOKS, authorId);
       this.STATE_ENTITIES.update(
@@ -70,22 +81,6 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
         })
       )
     },
-    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: () => {
-      this.STATE.update(
-        state => ({
-          ...state,
-          loading: false
-        })
-      );
-    }
-  }
-
-  override actions = {
-    [StateAuthorsActions.LOAD_DATA]: () => {},
-    [`${StateAuthorsActions.LOAD_DATA}:SUCCESS`]: (authors: AuthorsModel[]) => {},
-    [`${StateAuthorsActions.LOAD_DATA}:ERROR`]: (error: any) => {},
-
-    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]: (authorId: string) => {},
   }
 
 }

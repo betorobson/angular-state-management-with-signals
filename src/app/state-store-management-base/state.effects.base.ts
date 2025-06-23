@@ -44,6 +44,20 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
     )
   }
 
+  registerAsyncEffectOnSuccess(
+    effectName: string | number,
+    effectFunction: (properties: any) => void
+  ){
+    this.registerEffect(`${effectName}:SUCCESS`, effectFunction)
+  }
+
+  registerAsyncEffectOnError(
+    effectName: string | number,
+    effectFunction: (properties: any) => void
+  ){
+    this.registerEffect(`${effectName}:ERROR`, effectFunction)
+  }
+
   runEffect(
     name: string | number,
     properties: any

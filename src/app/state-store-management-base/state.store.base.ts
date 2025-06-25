@@ -8,12 +8,14 @@ export abstract class StateStoreBase<
 > {
 
   private STATE: WritableSignal<STATE_MODEL>;
-  protected STATE_STORE = computed(() => this.STATE());
 
-  protected STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
+  private STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
     ids: [],
     entities: {}
   });
+
+  protected readonly STATE_STORE = computed(() => this.STATE());
+  protected readonly STATE_STORE_ENTITIES = computed(() => this.STATE_ENTITIES());
 
   actions: {
     [key: string | number]: (properties?: any) => void;
@@ -100,6 +102,10 @@ export abstract class StateStoreBase<
 
   protected updateStateStore(updateFunction: (state: STATE_MODEL) => STATE_MODEL){
     this.STATE.update(updateFunction);
+  }
+
+  protected updateStateStoreEntities(updateFunction: (state: StateStoreEntries<ENTITY_MODEL>) => StateStoreEntries<ENTITY_MODEL>){
+    this.STATE_ENTITIES.update(updateFunction);
   }
 
   private setActionRecuderExec(actions: {[actionName: string]: (data: any) => void}){

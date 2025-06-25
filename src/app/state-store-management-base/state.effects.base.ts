@@ -5,7 +5,7 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
 
   protected abstract stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>;
 
-  protected execEffects: {
+  private execEffects: {
     [key: string | number]: Subject<any>
   } = {}
 

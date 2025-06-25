@@ -1,13 +1,14 @@
 import { of, Subject } from "rxjs"
 import { StateEffectsBase } from "./state.effects.base";
-import { signal, Signal } from "@angular/core";
+import { computed, signal, Signal, WritableSignal } from "@angular/core";
 
 export abstract class StateStoreBase<
   STATE_MODEL,
   ENTITY_MODEL extends ENTITY_MODEL_BASE
 > {
 
-  protected STATE: Signal<STATE_MODEL>;
+  private STATE: WritableSignal<STATE_MODEL>;
+  protected STATE_STORE = computed(() => this.STATE());
 
   protected STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
     ids: [],
@@ -18,7 +19,7 @@ export abstract class StateStoreBase<
     [key: string | number]: (properties?: any) => void;
   } = {}
 
-  protected effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
+  private effects?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>;
 
   private dispatchReducersObservable: {
     [key: string | number]: Subject<any>
@@ -84,14 +85,21 @@ export abstract class StateStoreBase<
     },
   }
 
-  constructor(){}
+  constructor(){
+  }
 
-  init(){
-    if(this.effects){
+  protected init(initialState: STATE_MODEL, effectsService?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>){
+    this.STATE = signal(initialState);
+    if(effectsService){
+      this.effects = effectsService;
       this.effects.setStateStoreReference(this);
     }
     this.setActionRecuderExec(this.actions);
     this.setActionRecuderExec(this.entityActions);
+  }
+
+  protected updateStateStore(updateFunction: (state: STATE_MODEL) => STATE_MODEL){
+    this.STATE.update(updateFunction);
   }
 
   private setActionRecuderExec(actions: {[actionName: string]: (data: any) => void}){

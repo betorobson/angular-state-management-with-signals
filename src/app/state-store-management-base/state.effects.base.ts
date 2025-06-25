@@ -1,6 +1,5 @@
 import { Observable, of, Subject, tap } from "rxjs"
 import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from "./state.store.base";
-import { StateBooksActions } from "../components/books/store";
 
 export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
 

@@ -19,7 +19,7 @@ import { BooksModel } from '../../api-services/books.service';
         }
       </select>
       <input [formControl]="formGroup.controls['title']" />
-\      <button
+      <button
         type="submit"
         (click)="addBook()"
         [disabled]="!formGroup.valid || dataAuthorsLoading()"

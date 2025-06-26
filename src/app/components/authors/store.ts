@@ -47,16 +47,16 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
     },
     [`${StateAuthorsActions.LOAD_DATA}:ERROR`]: (error: any) => {},
 
-    [StateAuthorsActions.INCREMENT_TOTAL_BOOKS]: (authorId: string) => {
-      console.log(StateAuthorsActions.INCREMENT_TOTAL_BOOKS, authorId);
+    [StateAuthorsActions.UPDATE_TOTAL_BOOKS]: (data: {authorId: string, increment: boolean}) => {
+      console.log(StateAuthorsActions.UPDATE_TOTAL_BOOKS, data.authorId);
       this.updateStateStoreEntities(
         state => ({
           ...state,
           entities: {
             ...state.entities,
-            [authorId]: {
-              ...state.entities[authorId],
-              totalBooks: state.entities[authorId].totalBooks + 1
+            [data.authorId]: {
+              ...state.entities[data.authorId],
+              totalBooks: state.entities[data.authorId].totalBooks + (data.increment ? 1 : -1)
             }
           }
         })
@@ -72,6 +72,6 @@ export interface StateAuthors {
 }
 
 export enum StateAuthorsActions {
-  INCREMENT_TOTAL_BOOKS = 'INCREMENT_TOTAL_BOOKS',
+  UPDATE_TOTAL_BOOKS = 'INCREMENT_TOTAL_BOOKS',
   LOAD_DATA = 'LOAD_DATA'
 }

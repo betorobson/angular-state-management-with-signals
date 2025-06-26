@@ -14,8 +14,8 @@ export abstract class StateStoreBase<
     entities: {}
   });
 
-  protected readonly STATE_STORE = computed(() => this.STATE());
-  protected readonly STATE_STORE_ENTITIES = computed(() => this.STATE_ENTITIES());
+  protected readonly STATE_STORE = () => this.STATE();
+  protected readonly STATE_STORE_ENTITIES = () => this.STATE_ENTITIES();
 
   actions: {
     [key: string | number]: (properties?: any) => void;
@@ -55,19 +55,19 @@ export abstract class StateStoreBase<
         })
       )
     },
-    [StateStoreEntityActions.REMOVE_ENTITY]: (entityID: string) => {
-      if(!this.STATE_ENTITIES().ids.includes(entityID)){
+    [StateStoreEntityActions.REMOVE_ENTITY]: (entity: ENTITY_MODEL) => {
+      if(!this.STATE_ENTITIES().ids.includes(entity.id)){
         throw new Error('entityID does not exists');
       }
       this.STATE_ENTITIES.update(
         state => {
-          state.entities[entityID] = null;
-          delete state.entities[entityID]
+          state.entities[entity.id] = null;
+          delete state.entities[entity.id]
           return {
             ...state,
             ids: [
-              ...state.ids.slice(0,state.ids.indexOf(entityID)),
-              ...state.ids.slice(state.ids.indexOf(entityID)+1)
+              ...state.ids.slice(0,state.ids.indexOf(entity.id)),
+              ...state.ids.slice(state.ids.indexOf(entity.id)+1)
             ],
             entities: {...state.entities}
           }

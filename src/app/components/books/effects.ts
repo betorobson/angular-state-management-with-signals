@@ -28,6 +28,24 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     );
 
     this.registerEffect(
+      StateBooksActions.SAVE_DATA,
+      () => {
+
+        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
+          new Date().getTime()
+        );
+
+        this.runEffectAsyncPipe(
+          StateBooksActions.SAVE_DATA,
+          this.apiServiceBooks.saveAllBooks(
+            this.stateStoreReference.selectors.rawData()
+          )
+        )
+
+      }
+    );
+
+    this.registerEffect(
       StateBooksActions.ASYNC_ADD_ENTRY_API,
       (bookModel: BooksModel) => {
         this.runEffectAsyncPipe(
@@ -83,35 +101,30 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateStoreEntityActions.ADD_ENTITY,
       (bookModel: BooksModel) => {
 
-        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
-          new Date().getTime()
-        );
+        this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
 
         this.stateAuthorsServiceStore
-          .actions[StateAuthorsActions.INCREMENT_TOTAL_BOOKS](bookModel.authorId);
+          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.authorId, increment: true});
 
       }
     );
 
     this.registerEffect(
       StateStoreEntityActions.REMOVE_ENTITY,
-      (book: Pick<BooksModel, 'id'>) => {
-        console.log('EFFECT: REMOVE_ENTITY', book);
-        this.runEffectAsyncPipe(
-          StateStoreEntityActions.REMOVE_ENTITY,
-          this.apiServiceBooks.saveAllBooks(
-            this.stateStoreReference.selectors.rawData()
-          )
-        )
+      (bookModel: BooksModel) => {
+
+        this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
+
+        this.stateAuthorsServiceStore
+          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.authorId, increment: false});
+
       }
     );
 
     this.registerEffect(
       StateStoreEntityActions.UPDATE_ENTITY,
       (bookModel: BooksModel) => {
-        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
-          new Date().getTime()
-        );
+        this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
       }
     );
 

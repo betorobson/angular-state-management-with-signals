@@ -56,6 +56,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
       this.updateStateStore(state => ({...state, lastUpdate: 1}))
     },
 
+    [StateBooksActions.SAVE_DATA]: () => console.log('ACTION: StateBooksActions.SAVE_DATA'),
+
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.updateStateStore(state => ({...state, lastUpdate}));
     },
@@ -76,7 +78,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
   }
 
   removeBook(book: BooksModel){
-    this.entityActions[StateStoreEntityActions.REMOVE_ENTITY](book.id);
+    this.entityActions[StateStoreEntityActions.REMOVE_ENTITY](book);
   }
 
   updateBook(book: BooksModel){
@@ -96,6 +98,7 @@ export interface StateBooksRawData {
 
 export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
+  SAVE_DATA = 'SAVE_DATA',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
   ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API'

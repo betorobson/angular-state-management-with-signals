@@ -14,6 +14,10 @@ export abstract class StateStoreBase<
     entities: {}
   });
 
+  entitiesSelectors = {
+    selectEntity: (id: string) => computed(() => this.STATE_ENTITIES().entities[id])
+  }
+
   protected readonly STATE_STORE = () => this.STATE();
   protected readonly STATE_STORE_ENTITIES = () => this.STATE_ENTITIES();
 

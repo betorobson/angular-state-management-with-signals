@@ -51,7 +51,7 @@ import { BooksModel } from '../../api-services/books.service';
           <button (click)="removeBook(item)">REMOVE</button>
           </div>
           <pre>{{item | json}}</pre>
-          <pre>{{getAuthor(item.authorId)() | json}}</pre>
+          <pre>{{dataAuthorsEntities()[item.authorId] | json}}</pre>
       </div>
       }
       </div>
@@ -78,7 +78,7 @@ export class ListBooksComponent implements OnInit {
 
   dataAuthors = this.stateAuthorsServiceStore.selectors.selectAll;
   dataAuthorsLoading = this.stateAuthorsServiceStore.selectors.loading;
-  getAuthor = this.stateAuthorsServiceStore.selectors.getAuthor
+  dataAuthorsEntities = this.stateAuthorsServiceStore.selectors.entities;
 
   lastUpdate = this.stateBooksServiceStore.selectors.lastUpdate;
   data = this.stateBooksServiceStore.selectors.selectAll;

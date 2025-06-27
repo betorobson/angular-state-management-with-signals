@@ -27,8 +27,7 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   selectors = {
     selectAll: computed(() => this.STATE_STORE_ENTITIES().ids.map(id => this.STATE_STORE_ENTITIES().entities[id])),
     loading: computed(() => this.STATE_STORE().loading),
-    // [todo] this does not look safe
-    getAuthor: (id: string) => computed(() => this.STATE_STORE_ENTITIES().entities[id]),
+    entities: computed(() => this.STATE_STORE_ENTITIES().entities),
   }
 
   addAuthor(author: AuthorsModel){

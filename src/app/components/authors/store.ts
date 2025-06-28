@@ -12,16 +12,19 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
 
     super();
 
-    this.init(
-      {
-        lastUpdate: 0,
-        loading: true
-      },
+    this.initActions(
       inject(StateAuthorsServiceEffects)
     );
 
     this.actions[StateAuthorsActions.LOAD_DATA]();
 
+  }
+
+  getInitialStateStore(){
+    return {
+      lastUpdate: 0,
+      loading: true
+    }
   }
 
   selectors = {

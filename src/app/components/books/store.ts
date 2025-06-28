@@ -1,4 +1,4 @@
-import { Injectable, computed, inject} from '@angular/core';
+import { Injectable, computed, inject, signal} from '@angular/core';
 import { BooksModel } from '../../api-services/books.service';
 import { StateBooksServiceEffects } from './effects';
 import { StateStoreBase, StateStoreEntityActions, StateStoreEntries } from '../../state-store-management-base/state.store.base';
@@ -12,12 +12,15 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     super();
 
-    this.init(
-      {
-        lastUpdate: 0,
-      },
+    this.initActions(
       inject(StateBooksServiceEffects)
     );
+  }
+
+  getInitialStateStore(){
+    return {
+      lastUpdate: 0,
+    }
   }
 
   ///////////////////// SELECTORS
@@ -49,6 +52,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
         this.updateStateStore(() => ({...data.stateBooks}))
         this.updateStateStoreEntities(() => ({...data.stateBooksEntities}))
       }
+      this.STATE_STORE()
     },
 
     [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {

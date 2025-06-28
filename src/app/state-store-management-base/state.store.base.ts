@@ -7,9 +7,9 @@ export abstract class StateStoreBase<
   ENTITY_MODEL extends ENTITY_MODEL_BASE
 > {
 
-  private STATE: WritableSignal<STATE_MODEL>;
+  private readonly STATE = signal<STATE_MODEL>(null);
 
-  private STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
+  private readonly STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
     ids: [],
     entities: {}
   });
@@ -18,8 +18,8 @@ export abstract class StateStoreBase<
     selectEntity: (id: string) => computed(() => this.STATE_ENTITIES().entities[id])
   }
 
-  protected readonly STATE_STORE = () => this.STATE();
-  protected readonly STATE_STORE_ENTITIES = () => this.STATE_ENTITIES();
+  protected readonly STATE_STORE = this.STATE.asReadonly();
+  protected readonly STATE_STORE_ENTITIES = this.STATE_ENTITIES.asReadonly();
 
   actions: {
     [key: string | number]: (properties?: any) => void;
@@ -92,10 +92,12 @@ export abstract class StateStoreBase<
   }
 
   constructor(){
+    this.STATE.set(this.getInitialStateStore());
   }
 
-  protected init(initialState: STATE_MODEL, effectsService?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>){
-    this.STATE = signal(initialState);
+  protected abstract getInitialStateStore(): STATE_MODEL;
+
+  protected initActions(effectsService?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>){
     if(effectsService){
       this.effects = effectsService;
       this.effects.setStateStoreReference(this);

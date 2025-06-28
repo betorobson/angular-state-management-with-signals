@@ -12,13 +12,17 @@ export class CounterStoreService extends StateStoreBase<StateCounterModel, any> 
 
     super();
 
-    this.init(
-      {
-        count: 0,
-        message: ''
-      },
-      inject(StateCounterServiceEffects)
+    this.initActions(
+
     );
+
+  }
+
+  getInitialStateStore(){
+    return {
+      count: 0,
+      message: ''
+    }
   }
 
   ///////////////////// SELECTORS

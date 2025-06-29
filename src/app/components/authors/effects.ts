@@ -1,13 +1,13 @@
 import { Injectable, inject} from '@angular/core';
-import { StateAuthors, StateAuthorsActions, StateAuthorsServiceStore } from '../authors/store';
+import { StateAuthors, StateAuthorsActions, StateAuthorsEntityCustomMetaData, StateAuthorsServiceStore } from '../authors/store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
-import { StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
+import { STATE_BASE_ENTITY, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 import { APIServiceAuthors, AuthorsModel } from '../../api-services/authors.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StateAuthorsServiceEffects extends StateEffectsBase<StateAuthors, AuthorsModel> {
+export class StateAuthorsServiceEffects extends StateEffectsBase<StateAuthors, AuthorsModel, StateAuthorsEntityCustomMetaData> {
 
   protected override stateStoreReference: StateAuthorsServiceStore;
   private apiServiceAuthors = inject(APIServiceAuthors);
@@ -30,7 +30,20 @@ export class StateAuthorsServiceEffects extends StateEffectsBase<StateAuthors, A
       `${StateAuthorsActions.LOAD_DATA}:SUCCESS`,
       (authors: AuthorsModel[]) => {
         console.log('EFFECT: LOAD DATA SUCCESS', authors);
-        this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITIES](authors);
+        this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITIES](
+          authors.map<STATE_BASE_ENTITY<AuthorsModel, StateAuthorsEntityCustomMetaData>>(
+            author => ({
+              meta_data: {
+                error: null,
+                loading: false,
+                custom: {
+                  totalBooks: 0
+                }
+              },
+              data: author
+            })
+          )
+        );
       }
     );
 

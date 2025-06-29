@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BooksModel } from '../../api-services/books.service';
+import { STATE_BASE_ENTITY } from '../../state-store-management-base/state.store.base';
 
 @Component({
   selector: 'list-books',
@@ -14,8 +15,8 @@ import { BooksModel } from '../../api-services/books.service';
       <select [formControl]="formGroup.controls['authorId']">
         @for(author of dataAuthors(); track $index){
           <option
-            [value]="author.id"
-          >{{author.name}} ({{author.totalBooks}})</option>
+            [value]="author.data.id"
+          >{{author.data.name}} ({{author.meta_data.custom.totalBooks}})</option>
         }
       </select>
       <input [formControl]="formGroup.controls['title']" />
@@ -46,12 +47,12 @@ import { BooksModel } from '../../api-services/books.service';
       @for(item of data(); track $index){
       <div style="display: flex">
           <div style="display: flex; flex-direction: column">
-          <button (click)="updateRating(item, item.rating - 1)">DOWN RATING</button>
-          <button (click)="updateRating(item, item.rating + 1)">UP RATING</button>
+          <button (click)="updateRating(item, item.data.rating - 1)">DOWN RATING</button>
+          <button (click)="updateRating(item, item.data.rating + 1)">UP RATING</button>
           <button (click)="removeBook(item)">REMOVE</button>
           </div>
           <pre>{{item | json}}</pre>
-          <pre>{{dataAuthor(item.authorId)() | json}}</pre>
+          <pre>{{dataAuthor(item.data.authorId)() | json}}</pre>
       </div>
       }
       </div>
@@ -112,7 +113,6 @@ export class ListBooksComponent implements OnInit {
       id: new Date().getTime().toString(),
       name: 'New name ' + this.dataAuthors().length,
       about: 'test',
-      totalBooks: 0
     })
   }
 
@@ -127,14 +127,17 @@ export class ListBooksComponent implements OnInit {
     return false;
   }
 
-  removeBook(book: BooksModel){
+  removeBook(book: STATE_BASE_ENTITY<BooksModel>){
     this.stateBooksServiceStore.removeBook(book);
   }
 
-  updateRating(book: BooksModel, rating: number){
+  updateRating(book: STATE_BASE_ENTITY<BooksModel>, rating: number){
     this.stateBooksServiceStore.updateBook({
       ...book,
-      rating
+      data: {
+        ...book.data,
+        rating
+      }
     })
   }
 

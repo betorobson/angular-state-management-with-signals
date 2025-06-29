@@ -3,7 +3,7 @@ import { APIServiceBooks, BooksModel } from '../../api-services/books.service';
 import { StateAuthorsActions, StateAuthorsServiceStore } from '../authors/store';
 import { StateBooks, StateBooksActions, StateBooksRawData, StateBooksServiceStore } from './store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
-import { StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
+import { STATE_BASE_ENTITY, StateStoreEntityActions } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
@@ -57,7 +57,13 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
     this.registerAsyncEffectOnSuccess(
       `${StateBooksActions.ASYNC_ADD_ENTRY_API}`,
-      (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY](bookModel)
+      (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY]({
+        meta_data: {
+          error: null,
+          loading: false,
+        },
+        data: bookModel
+      })
     );
 
     this.registerAsyncEffectOnError(
@@ -68,15 +74,15 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       }
     );
 
-    this.registerEffect(
-      `${StateBooksActions.LOAD_DATA}:SUCCESS`,
+    this.registerAsyncEffectOnSuccess(
+      StateBooksActions.LOAD_DATA,
       (result: StateBooksRawData) => {
         console.log('EFFECT: LOAD DATA SUCCESS', result);
       }
     );
 
-    this.registerEffect(
-      `${StateBooksActions.LOAD_DATA}:ERROR`,
+    this.registerAsyncEffectOnError(
+      StateBooksActions.LOAD_DATA,
       (result: any) => {
         console.log('EFFECT: LOAD DATA ERROR', result);
       }
@@ -99,31 +105,31 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
     this.registerEffect(
       StateStoreEntityActions.ADD_ENTITY,
-      (bookModel: BooksModel) => {
+      (bookModel: STATE_BASE_ENTITY<BooksModel>) => {
 
         this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
 
         this.stateAuthorsServiceStore
-          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.authorId, increment: true});
+          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.data.authorId, increment: true});
 
       }
     );
 
     this.registerEffect(
       StateStoreEntityActions.REMOVE_ENTITY,
-      (bookModel: BooksModel) => {
+      (bookModel: STATE_BASE_ENTITY<BooksModel>) => {
 
         this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
 
         this.stateAuthorsServiceStore
-          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.authorId, increment: false});
+          .actions[StateAuthorsActions.UPDATE_TOTAL_BOOKS]({authorId: bookModel.data.authorId, increment: false});
 
       }
     );
 
     this.registerEffect(
       StateStoreEntityActions.UPDATE_ENTITY,
-      (bookModel: BooksModel) => {
+      (bookModel: STATE_BASE_ENTITY<BooksModel>) => {
         this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
       }
     );

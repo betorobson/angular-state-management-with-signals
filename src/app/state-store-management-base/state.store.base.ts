@@ -4,12 +4,13 @@ import { computed, signal, Signal, WritableSignal } from "@angular/core";
 
 export abstract class StateStoreBase<
   STATE_MODEL,
-  ENTITY_MODEL extends ENTITY_MODEL_BASE
+  ENTITY_MODEL extends ENTITY_MODEL_BASE,
+  ENTITY_MODEL_CUSTOM_METADA = any
 > {
 
   private readonly STATE = signal<STATE_MODEL>(null);
 
-  private readonly STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL>>({
+  private readonly STATE_ENTITIES = signal<StateStoreEntries<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>>({
     ids: [],
     entities: {}
   });
@@ -36,55 +37,58 @@ export abstract class StateStoreBase<
   } = {}
 
   entityActions = {
-    [StateStoreEntityActions.ADD_ENTITY]: (entity: ENTITY_MODEL) => {
+    [StateStoreEntityActions.ADD_ENTITY]: (entity: STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>) => {
       this.STATE_ENTITIES.update(
         state => ({
           ...state,
-          ids: [...state.ids, entity.id],
-          entities: {...state.entities, [entity.id]: entity}
+          ids: [...state.ids, entity.data.id],
+          entities: {
+            ...state.entities,
+            [entity.data.id]: entity
+          }
         })
       )
     },
-    [StateStoreEntityActions.ADD_ENTITIES]: (entities: ENTITY_MODEL[]) => {
+    [StateStoreEntityActions.ADD_ENTITIES]: (entities: STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>[]) => {
       this.STATE_ENTITIES.update(
         state => ({
           ...state,
-          ids: [...state.ids, ...entities.map(entity => entity.id)],
+          ids: [...state.ids, ...entities.map(entity => entity.data.id)],
           entities: {
             ...state.entities,
             ...Object.fromEntries(
-              entities.map(entity => [entity.id, entity])
+              entities.map(entity => [entity.data.id, entity])
             )
           }
         })
       )
     },
-    [StateStoreEntityActions.REMOVE_ENTITY]: (entity: ENTITY_MODEL) => {
-      if(!this.STATE_ENTITIES().ids.includes(entity.id)){
+    [StateStoreEntityActions.REMOVE_ENTITY]: (entity: STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>) => {
+      if(!this.STATE_ENTITIES().ids.includes(entity.data.id)){
         throw new Error('entityID does not exists');
       }
       this.STATE_ENTITIES.update(
         state => {
-          state.entities[entity.id] = null;
-          delete state.entities[entity.id]
+          state.entities[entity.data.id] = null;
+          delete state.entities[entity.data.id]
           return {
             ...state,
             ids: [
-              ...state.ids.slice(0,state.ids.indexOf(entity.id)),
-              ...state.ids.slice(state.ids.indexOf(entity.id)+1)
+              ...state.ids.slice(0,state.ids.indexOf(entity.data.id)),
+              ...state.ids.slice(state.ids.indexOf(entity.data.id)+1)
             ],
             entities: {...state.entities}
           }
         }
       )
     },
-    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: ENTITY_MODEL) => {
+    [StateStoreEntityActions.UPDATE_ENTITY]: (entity: STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>) => {
       this.STATE_ENTITIES.update(
         state => ({
           ...state,
           entities: {
             ...state.entities,
-            [entity.id]: entity
+            [entity.data.id]: entity
           }
         })
       )
@@ -110,7 +114,7 @@ export abstract class StateStoreBase<
     this.STATE.update(updateFunction);
   }
 
-  protected updateStateStoreEntities(updateFunction: (state: StateStoreEntries<ENTITY_MODEL>) => StateStoreEntries<ENTITY_MODEL>){
+  protected updateStateStoreEntities(updateFunction: (state: StateStoreEntries<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>) => StateStoreEntries<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>){
     this.STATE_ENTITIES.update(updateFunction);
   }
 
@@ -165,9 +169,18 @@ export interface StateStoreActionsRunners {
   [key: string | number]: (data: string) => void;
 }
 
-export interface StateStoreEntries<ENTITY_MODEL> {
+export interface StateStoreEntries<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA = any> {
   ids: string[],
   entities: {
-    [id: string]: ENTITY_MODEL
+    [id: string]: STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>
   }
+}
+
+export interface STATE_BASE_ENTITY<ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA = any> {
+  meta_data: {
+    error: string;
+    loading: boolean;
+    custom?: ENTITY_MODEL_CUSTOM_METADA;
+  };
+  data: ENTITY_MODEL;
 }

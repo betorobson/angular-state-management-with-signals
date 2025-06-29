@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal} from '@angular/core';
 import { BooksModel } from '../../api-services/books.service';
 import { StateBooksServiceEffects } from './effects';
-import { StateStoreBase, StateStoreEntityActions, StateStoreEntries } from '../../state-store-management-base/state.store.base';
+import { STATE_BASE_ENTITY, StateStoreBase, StateStoreEntityActions, StateStoreEntries } from '../../state-store-management-base/state.store.base';
 
 @Injectable({
   providedIn: 'root',
@@ -31,9 +31,9 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     }),
     selectAll: computed(() => this.STATE_STORE_ENTITIES().ids.map(id => this.STATE_STORE_ENTITIES().entities[id])),
     filterRatingTitle: computed(() => this.STATE_STORE_ENTITIES().ids
-      .filter(id => this.STATE_STORE_ENTITIES().entities[id].rating > 6)
+      .filter(id => this.STATE_STORE_ENTITIES().entities[id].data.rating > 6)
       .map(filteredId => {
-        const {id, title} = this.STATE_STORE_ENTITIES().entities[filteredId];
+        const {id, title} = this.STATE_STORE_ENTITIES().entities[filteredId].data;
         return {id, title}
       })
     ),
@@ -72,8 +72,8 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => {},
 
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: BooksModel) => {},
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: BooksModel) => {},
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: STATE_BASE_ENTITY<BooksModel>) => {},
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: STATE_BASE_ENTITY<BooksModel>) => {},
 
   }
 
@@ -81,11 +81,11 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     this.actions[StateBooksActions.ASYNC_ADD_ENTRY_API](book);
   }
 
-  removeBook(book: BooksModel){
+  removeBook(book: STATE_BASE_ENTITY<BooksModel>){
     this.entityActions[StateStoreEntityActions.REMOVE_ENTITY](book);
   }
 
-  updateBook(book: BooksModel){
+  updateBook(book: STATE_BASE_ENTITY<BooksModel>){
     this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
   }
 

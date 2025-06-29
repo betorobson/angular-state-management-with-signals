@@ -11,14 +11,12 @@ export class APIServiceAuthors {
         {
           id: '1',
           name: 'Robert Nogueira',
-          about: 'It\'s me',
-          totalBooks: 0
+          about: 'It\'s me'
         },
         {
           id: '2',
           name: 'Robson Soares',
-          about: 'Also It\'s me',
-          totalBooks: 0
+          about: 'Also It\'s me'
         }
       ])
       .pipe(delay(2000))
@@ -29,5 +27,4 @@ export interface AuthorsModel {
   id: string;
   name: string;
   about: string;
-  totalBooks: number;
 }

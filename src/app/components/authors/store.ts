@@ -6,7 +6,7 @@ import { StateAuthorsServiceEffects } from './effects';
 @Injectable({
   providedIn: 'root',
 })
-export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, AuthorsModel> {
+export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, AuthorsModel, StateAuthorsEntityCustomMetaData> {
 
   constructor(){
 
@@ -34,7 +34,16 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
   }
 
   addAuthor(author: AuthorsModel){
-    this.entityActions[StateStoreEntityActions.ADD_ENTITY](author);
+    this.entityActions[StateStoreEntityActions.ADD_ENTITY]({
+      meta_data: {
+        error: null,
+        loading: false,
+        custom: {
+          totalBooks: 0
+        }
+      },
+      data: author
+    });
   }
 
   override actions = {
@@ -58,7 +67,12 @@ export class StateAuthorsServiceStore extends StateStoreBase<StateAuthors, Autho
             ...state.entities,
             [data.authorId]: {
               ...state.entities[data.authorId],
-              totalBooks: state.entities[data.authorId].totalBooks + (data.increment ? 1 : -1)
+              meta_data: {
+                ...state.entities[data.authorId].meta_data,
+                custom: {
+                  totalBooks: state.entities[data.authorId].meta_data.custom.totalBooks + (data.increment ? 1 : -1)
+                }
+              }
             }
           }
         })
@@ -76,4 +90,8 @@ export interface StateAuthors {
 export enum StateAuthorsActions {
   UPDATE_TOTAL_BOOKS = 'INCREMENT_TOTAL_BOOKS',
   LOAD_DATA = 'LOAD_DATA'
+}
+
+export interface StateAuthorsEntityCustomMetaData {
+  totalBooks: number;
 }

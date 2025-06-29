@@ -1,15 +1,15 @@
 import { Observable, of, Subject, tap } from "rxjs"
 import { ENTITY_MODEL_BASE, StateStoreBase, StateStoreEntityActions } from "./state.store.base";
 
-export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE> {
+export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_MODEL_BASE, ENTITY_MODEL_CUSTOM_METADA = any> {
 
-  protected abstract stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>;
+  protected abstract stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>;
 
   private execEffects: {
     [key: string | number]: Subject<any>
   } = {}
 
-  setStateStoreReference(stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL>){
+  setStateStoreReference(stateStoreReference: StateStoreBase<STATE_MODEL, ENTITY_MODEL, ENTITY_MODEL_CUSTOM_METADA>){
     this.stateStoreReference = stateStoreReference;
     this.setExecEffects();
   }

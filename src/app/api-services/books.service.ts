@@ -31,10 +31,22 @@ export class APIServiceBooks {
       )
   }
 
-  put(bookModel: BooksModel){
+  post(bookModel: BooksModel){
     return of(bookModel)
       .pipe(
         delay(500),
+        tap(result => {
+          if(/bob/.test(result.title)) {
+            throw new Error('Bob is not allowed')
+          }
+        })
+      )
+  }
+
+  put(bookModel: BooksModel){
+    return of(bookModel)
+      .pipe(
+        delay(1500),
         tap(result => {
           if(/bob/.test(result.title)) {
             throw new Error('Bob is not allowed')

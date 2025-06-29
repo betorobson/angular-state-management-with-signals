@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { StateBooksActions, StateBooksServiceStore } from './store';
+import { STATE_BASE_BOOK_ENTITY, StateBooksActions, StateBooksServiceStore } from './store';
 import { CommonModule } from '@angular/common';
 import { StateAuthorsServiceStore } from '../authors/store';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -127,11 +127,11 @@ export class ListBooksComponent implements OnInit {
     return false;
   }
 
-  removeBook(book: STATE_BASE_ENTITY<BooksModel>){
+  removeBook(book: STATE_BASE_BOOK_ENTITY){
     this.stateBooksServiceStore.removeBook(book);
   }
 
-  updateRating(book: STATE_BASE_ENTITY<BooksModel>, rating: number){
+  updateRating(book: STATE_BASE_BOOK_ENTITY, rating: number){
     this.stateBooksServiceStore.updateBook({
       ...book,
       data: {

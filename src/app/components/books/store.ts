@@ -71,9 +71,12 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     },
 
     [StateBooksActions.ASYNC_ADD_ENTRY_API]: (book: BooksModel) => {},
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: STATE_BASE_BOOK_ENTITY) => {},
+    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: STATE_BASE_BOOK_ENTITY) => {},
 
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:SUCCESS`]: (book: STATE_BASE_ENTITY<BooksModel>) => {},
-    [`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`]: (book: STATE_BASE_ENTITY<BooksModel>) => {},
+    [StateBooksActions.ASYNC_UPDATE_ENTRY_API]: (book: STATE_BASE_BOOK_ENTITY) => {},
+    [`${StateBooksActions.ASYNC_UPDATE_ENTRY_API}:SUCCESS`]: (book: STATE_BASE_BOOK_ENTITY) => {},
+    [`${StateBooksActions.ASYNC_UPDATE_ENTRY_API}:ERROR`]: (book: STATE_BASE_BOOK_ENTITY) => {},
 
   }
 
@@ -81,12 +84,12 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     this.actions[StateBooksActions.ASYNC_ADD_ENTRY_API](book);
   }
 
-  removeBook(book: STATE_BASE_ENTITY<BooksModel>){
+  removeBook(book: STATE_BASE_BOOK_ENTITY){
     this.entityActions[StateStoreEntityActions.REMOVE_ENTITY](book);
   }
 
-  updateBook(book: STATE_BASE_ENTITY<BooksModel>){
-    this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
+  updateBook(book: STATE_BASE_BOOK_ENTITY){
+    this.actions[StateBooksActions.ASYNC_UPDATE_ENTRY_API](book);
   }
 
 }
@@ -100,10 +103,13 @@ export interface StateBooksRawData {
   stateBooksEntities: StateStoreEntries<BooksModel>
 }
 
+export type STATE_BASE_BOOK_ENTITY = STATE_BASE_ENTITY<BooksModel>;
+
 export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
   SAVE_DATA = 'SAVE_DATA',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
-  ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API'
+  ASYNC_ADD_ENTRY_API = 'ASYNC_ADD_ENTRY_API',
+  ASYNC_UPDATE_ENTRY_API = 'ASYNC_UPDATE_ENTRY_API',
 }

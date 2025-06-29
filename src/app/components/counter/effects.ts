@@ -25,12 +25,10 @@ export class StateCounterServiceEffects extends StateEffectsBase<StateCounterMod
 
     this.registerEffect(
       StateCounterActions.GET_API,
-      (count: number) => {
-        this.runEffectAsyncPipe(
-          StateCounterActions.GET_API,
-          this.apiServiceCounter.get(count)
-        );
-      }
+      (count: number) => this.apiServiceCounter.get(count).subscribe(
+        result => this.stateStoreReference.actions[`${StateCounterActions.GET_API}:SUCCESS`](result),
+        error => this.stateStoreReference.actions[`${StateCounterActions.GET_API}:ERROR`](error)
+      )
     );
 
   }

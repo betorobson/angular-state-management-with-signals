@@ -47,9 +47,9 @@ import { STATE_BASE_ENTITY } from '../../state-store-management-base/state.store
       @for(item of data(); track $index){
       <div style="display: flex">
           <div style="display: flex; flex-direction: column">
-          <button (click)="updateRating(item, item.data.rating - 1)">DOWN RATING</button>
-          <button (click)="updateRating(item, item.data.rating + 1)">UP RATING</button>
-          <button (click)="removeBook(item)">REMOVE</button>
+          <button (click)="updateRating(item, item.data.rating - 1)" [disabled]="item.meta_data.loading">DOWN RATING</button>
+          <button (click)="updateRating(item, item.data.rating + 1)" [disabled]="item.meta_data.loading">UP RATING</button>
+          <button (click)="removeBook(item)" [disabled]="item.meta_data.loading">REMOVE</button>
           </div>
           <pre>{{item | json}}</pre>
           <pre>{{dataAuthor(item.data.authorId)() | json}}</pre>

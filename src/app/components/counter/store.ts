@@ -13,7 +13,7 @@ export class CounterStoreService extends StateStoreBase<StateCounterModel, any> 
     super();
 
     this.initActions(
-
+      inject(StateCounterServiceEffects)
     );
 
   }

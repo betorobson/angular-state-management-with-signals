@@ -43,20 +43,6 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
     )
   }
 
-  registerAsyncEffectOnSuccess(
-    effectName: string | number,
-    effectFunction: (data: any) => void
-  ){
-    this.registerEffect(`${effectName}:SUCCESS`, effectFunction)
-  }
-
-  registerAsyncEffectOnError(
-    effectName: string | number,
-    effectFunction: (data: any) => void
-  ){
-    this.registerEffect(`${effectName}:ERROR`, effectFunction)
-  }
-
   runEffect(
     name: string | number,
     data: any
@@ -64,24 +50,6 @@ export abstract class StateEffectsBase<STATE_MODEL, ENTITY_MODEL extends ENTITY_
     if(this.execEffects[name]){
       this.execEffects[name].next(data);
     }
-  }
-
-  runEffectAsyncPipe(
-    name: string | number,
-    result: Observable<any>
-  ){
-    result.subscribe(
-      result => {
-        if(this.stateStoreReference.actions[`${name}:SUCCESS`]){
-          this.stateStoreReference.actions[`${name}:SUCCESS`](result)
-        }
-      },
-      error => {
-        if(this.stateStoreReference.actions[`${name}:ERROR`]){
-          this.stateStoreReference.actions[`${name}:ERROR`](error)
-        }
-      }
-    )
   }
 
 }

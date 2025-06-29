@@ -17,15 +17,19 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
 
   register(){
 
+    // LOAD DATA
+
     this.registerEffect(
       StateBooksActions.LOAD_DATA,
       () => {
-        this.runEffectAsyncPipe(
-          StateBooksActions.LOAD_DATA,
-          this.apiServiceBooks.get()
-        );
+        this.apiServiceBooks.get().subscribe(
+          result => this.stateStoreReference.actions[`${StateBooksActions.LOAD_DATA}:SUCCESS`](result),
+          error => this.stateStoreReference.actions[`${StateBooksActions.LOAD_DATA}:ERROR`](error)
+        )
       }
     );
+
+    // SAVE DATA
 
     this.registerEffect(
       StateBooksActions.SAVE_DATA,
@@ -35,12 +39,9 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
           new Date().getTime()
         );
 
-        this.runEffectAsyncPipe(
-          StateBooksActions.SAVE_DATA,
-          this.apiServiceBooks.saveAllBooks(
-            this.stateStoreReference.selectors.rawData()
-          )
-        )
+        this.apiServiceBooks.saveAllBooks(
+          this.stateStoreReference.selectors.rawData()
+        ).subscribe();
 
       }
     );
@@ -48,39 +49,31 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     // ADD ENTRY
 
     this.registerEffect(
-      StateBooksActions.ASYNC_ADD_ENTRY_API,
+      StateBooksActions.ASYNC_ADD_ENTITY_API,
       (bookModel: BooksModel) => {
-        this.runEffectAsyncPipe(
-          StateBooksActions.ASYNC_ADD_ENTRY_API,
-          this.apiServiceBooks.post(bookModel)
+        this.apiServiceBooks.post(bookModel).subscribe(
+          () =>
+            this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY]({
+              meta_data: {
+                error: null,
+                loading: false,
+              },
+              data: bookModel
+            }),
+          error => {
+            console.log(`EFFECT: ${StateBooksActions.ASYNC_ADD_ENTITY_API} ERROR`, error);
+            alert(error);
+          }
         );
-      }
-    );
-
-    this.registerAsyncEffectOnSuccess(
-      `${StateBooksActions.ASYNC_ADD_ENTRY_API}`,
-      (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.ADD_ENTITY]({
-        meta_data: {
-          error: null,
-          loading: false,
-        },
-        data: bookModel
-      })
-    );
-
-    this.registerAsyncEffectOnError(
-      `${StateBooksActions.ASYNC_ADD_ENTRY_API}`,
-      (error: any) => {
-        console.log(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, error);
-        alert(error)
       }
     );
 
     // UPDATE ENTRY
 
     this.registerEffect(
-      StateBooksActions.ASYNC_UPDATE_ENTRY_API,
+      StateBooksActions.ASYNC_UPDATE_ENTITY_API,
       (stateBaseEntityBook: STATE_BASE_BOOK_ENTITY) => {
+
         this.stateStoreReference.entityActions[StateStoreEntityActions.UPDATE_ENTITY](
           {
             ...stateBaseEntityBook,
@@ -89,46 +82,22 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
               loading: true
             }
           }
-        )
-        this.runEffectAsyncPipe(
-          StateBooksActions.ASYNC_UPDATE_ENTRY_API,
-          this.apiServiceBooks.put(stateBaseEntityBook.data)
         );
-      }
-    );
 
-    this.registerAsyncEffectOnSuccess(
-      `${StateBooksActions.ASYNC_UPDATE_ENTRY_API}`,
-      (bookModel: BooksModel) => this.stateStoreReference.entityActions[StateStoreEntityActions.UPDATE_ENTITY]({
-        meta_data: {
-          error: null,
-          loading: false,
-        },
-        data: bookModel
-      })
-    );
+        this.apiServiceBooks.put(stateBaseEntityBook.data).subscribe(
+          (result) => this.stateStoreReference.entityActions[StateStoreEntityActions.UPDATE_ENTITY]({
+            meta_data: {
+              error: null,
+              loading: false,
+            },
+            data: stateBaseEntityBook.data
+          }),
+          error => {
+            console.log(`${StateStoreEntityActions.UPDATE_ENTITY}:ERROR`, error);
+            alert(error)
+          }
+        );
 
-    this.registerAsyncEffectOnError(
-      `${StateBooksActions.ASYNC_UPDATE_ENTRY_API}`,
-      (error: any) => {
-        console.log(`${StateBooksActions.ASYNC_ADD_ENTRY_API}:ERROR`, error);
-        alert(error)
-      }
-    );
-
-    // LOAD DATA
-
-    this.registerAsyncEffectOnSuccess(
-      StateBooksActions.LOAD_DATA,
-      (result: StateBooksRawData) => {
-        console.log('EFFECT: LOAD DATA SUCCESS', result);
-      }
-    );
-
-    this.registerAsyncEffectOnError(
-      StateBooksActions.LOAD_DATA,
-      (result: any) => {
-        console.log('EFFECT: LOAD DATA ERROR', result);
       }
     );
 
@@ -136,12 +105,9 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateBooksActions.SET_LAST_UPDATE,
       (properties: any) => {
         console.log('EFFECT: SET_LAST_UPDATE', properties)
-        this.runEffectAsyncPipe(
-          StateBooksActions.SET_LAST_UPDATE,
-          this.apiServiceBooks.saveAllBooks(
-            this.stateStoreReference.selectors.rawData()
-          )
-        );
+        this.apiServiceBooks.saveAllBooks(
+          this.stateStoreReference.selectors.rawData()
+        ).subscribe()
       }
     );
 

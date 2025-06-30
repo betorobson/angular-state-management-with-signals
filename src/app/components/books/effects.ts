@@ -23,8 +23,8 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateBooksActions.LOAD_DATA,
       () => {
         this.apiServiceBooks.get().subscribe(
-          result => this.stateStoreReference.actions[`${StateBooksActions.LOAD_DATA}:SUCCESS`](result),
-          error => this.stateStoreReference.actions[`${StateBooksActions.LOAD_DATA}:ERROR`](error)
+          result => this.stateStoreReference.actions[StateBooksActions.LOAD_DATA_SUCCESS](result),
+          error => this.stateStoreReference.actions[StateBooksActions.LOAD_DATA_ERROR](error)
         )
       }
     );

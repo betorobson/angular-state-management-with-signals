@@ -46,7 +46,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
     [StateBooksActions.LOAD_DATA]: () => console.log('ACTION: StateBooksActions.LOAD_DATA'),
 
-    [`${StateBooksActions.LOAD_DATA}:SUCCESS`]: (data: StateBooksRawData) => {
+    [StateBooksActions.LOAD_DATA_SUCCESS]: (data: StateBooksRawData) => {
       console.log('REDUCER: LOAD_DATA:SUCCESS', data);
       if(data){
         this.updateStateStore(() => ({...data.stateBooks}))
@@ -55,7 +55,7 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
       this.STATE_STORE()
     },
 
-    [`${StateBooksActions.LOAD_DATA}:ERROR`]: (error: any) => {
+    [StateBooksActions.LOAD_DATA_ERROR]: (error: any) => {
       console.log('REDUCER: LOAD_DATA:ERROR', error);
       this.updateStateStore(state => ({...state, lastUpdate: 1}))
     },
@@ -102,6 +102,8 @@ export type STATE_BASE_BOOK_ENTITY = STATE_BASE_ENTITY<BooksModel>;
 
 export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
+  LOAD_DATA_SUCCESS = 'LOAD_DATA_SUCCESS',
+  LOAD_DATA_ERROR = 'LOAD_DATA_ERROR',
   SAVE_DATA = 'SAVE_DATA',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',

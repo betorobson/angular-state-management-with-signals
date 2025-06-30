@@ -26,7 +26,7 @@ export class APIServiceBooks {
   saveAllBooks(data: StateBooksRawData){
     return of(data)
       .pipe(
-        delay(500),
+        delay(2000),
         tap(() => window.localStorage.setItem('APIServiceBooks', JSON.stringify(data)))
       )
   }

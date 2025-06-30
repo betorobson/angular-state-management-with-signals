@@ -6,7 +6,7 @@ import { STATE_BASE_ENTITY, StateStoreBase, StateStoreEntityActions, StateStoreE
 @Injectable({
   providedIn: 'root',
 })
-export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksModel> {
+export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksModel, StateBookEntityCustomMetaData> {
 
   constructor(){
 
@@ -37,6 +37,10 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
         return {id, title}
       })
     ),
+    filterPendingBooks: computed(() => this.STATE_STORE_ENTITIES().ids
+      .filter(id => this.STATE_STORE_ENTITIES().entities[id].meta_data.custom.pending)
+      .map(filteredId => this.STATE_STORE_ENTITIES().entities[filteredId])
+    ),
     lastUpdate: computed(() => this.STATE_STORE().lastUpdate),
   }
 
@@ -52,7 +56,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
         this.updateStateStore(() => ({...data.stateBooks}))
         this.updateStateStoreEntities(() => ({...data.stateBooksEntities}))
       }
-      this.STATE_STORE()
     },
 
     [StateBooksActions.LOAD_DATA_ERROR]: (error: any) => {
@@ -60,7 +63,17 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
       this.updateStateStore(state => ({...state, lastUpdate: 1}))
     },
 
-    [StateBooksActions.SAVE_DATA]: () => console.log('ACTION: StateBooksActions.SAVE_DATA'),
+    [StateBooksActions.SAVE_DATA]: () => {
+      this.selectors.filterPendingBooks().map(
+        book => {
+          book.meta_data.custom.pending = false;
+          this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
+        }
+      )
+    },
+
+    [StateBooksActions.SAVE_DATA_SUCCESS]: () => {
+    },
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
       this.updateStateStore(state => ({...state, lastUpdate}));
@@ -84,7 +97,11 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
   }
 
   updateBook(book: STATE_BASE_BOOK_ENTITY){
-    this.actions[StateBooksActions.ASYNC_UPDATE_ENTITY_API](book);
+    this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
+    // if(book.meta_data.custom.pending){
+    // }else{
+    //   this.actions[StateBooksActions.ASYNC_UPDATE_ENTITY_API](book);
+    // }
   }
 
 }
@@ -98,15 +115,20 @@ export interface StateBooksRawData {
   stateBooksEntities: StateStoreEntries<BooksModel>
 }
 
-export type STATE_BASE_BOOK_ENTITY = STATE_BASE_ENTITY<BooksModel>;
+export type STATE_BASE_BOOK_ENTITY = STATE_BASE_ENTITY<BooksModel, StateBookEntityCustomMetaData>;
 
 export enum StateBooksActions {
   LOAD_DATA = 'LOAD_DATA',
   LOAD_DATA_SUCCESS = 'LOAD_DATA_SUCCESS',
   LOAD_DATA_ERROR = 'LOAD_DATA_ERROR',
   SAVE_DATA = 'SAVE_DATA',
+  SAVE_DATA_SUCCESS = 'SAVE_DATA_SUCCESS',
   SET_LAST_UPDATE = 'SET_LAST_UPDATE',
   INCREMENT = 'INCREMENT',
   ASYNC_ADD_ENTITY_API = 'ASYNC_ADD_ENTITY_API',
   ASYNC_UPDATE_ENTITY_API = 'ASYNC_UPDATE_ENTITY_API',
+}
+
+export interface StateBookEntityCustomMetaData {
+  pending: boolean;
 }

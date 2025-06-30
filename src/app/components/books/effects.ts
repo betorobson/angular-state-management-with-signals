@@ -35,13 +35,15 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
       StateBooksActions.SAVE_DATA,
       () => {
 
-        this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
-          new Date().getTime()
-        );
+        // this.stateStoreReference.actions[StateBooksActions.SET_LAST_UPDATE](
+        //   new Date().getTime()
+        // );
 
         this.apiServiceBooks.saveAllBooks(
           this.stateStoreReference.selectors.rawData()
-        ).subscribe();
+        ).subscribe(
+          () => this.stateStoreReference.actions[StateBooksActions.SAVE_DATA_SUCCESS]()
+        );
 
       }
     );
@@ -57,6 +59,9 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
               meta_data: {
                 error: null,
                 loading: false,
+                custom: {
+                  pending: false
+                }
               },
               data: bookModel
             }),
@@ -140,7 +145,7 @@ export class StateBooksServiceEffects extends StateEffectsBase<StateBooks, Books
     this.registerEffect(
       StateStoreEntityActions.UPDATE_ENTITY,
       (registerEffect: STATE_BASE_BOOK_ENTITY) => {
-        this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
+        // this.stateStoreReference.actions[StateBooksActions.SAVE_DATA]();
       }
     );
 

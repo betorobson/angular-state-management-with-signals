@@ -39,6 +39,12 @@ import { STATE_BASE_ENTITY } from '../../state-store-management-base/state.store
         [disabled]="dataAuthorsLoading()"
         (click)="addAuthor()"
       >Add Author</button>
+      |
+      <button
+        type="button"
+        (click)="saveAllBooks()"
+        [disabled]="pendingBooks().length === 0"
+      >Save {{(pendingBooks().length)}} Pending</button>
       </form>
     </div>
     <hr />
@@ -85,6 +91,7 @@ export class ListBooksComponent implements OnInit {
   lastUpdate = this.stateBooksServiceStore.selectors.lastUpdate;
   data = this.stateBooksServiceStore.selectors.selectAll;
   bestTitle = this.stateBooksServiceStore.selectors.filterRatingTitle;
+  pendingBooks = this.stateBooksServiceStore.selectors.filterPendingBooks;
 
   formGroup = new FormGroup({
     authorId: new FormControl<string>('1', [Validators.required]),
@@ -127,6 +134,10 @@ export class ListBooksComponent implements OnInit {
     return false;
   }
 
+  saveAllBooks(){
+    this.stateBooksServiceStore.actions[StateBooksActions.SAVE_DATA]();
+  }
+
   removeBook(book: STATE_BASE_BOOK_ENTITY){
     this.stateBooksServiceStore.removeBook(book);
   }
@@ -134,6 +145,12 @@ export class ListBooksComponent implements OnInit {
   updateRating(book: STATE_BASE_BOOK_ENTITY, rating: number){
     this.stateBooksServiceStore.updateBook({
       ...book,
+      meta_data: {
+        ...book.meta_data,
+        custom: {
+          pending: true
+        }
+      },
       data: {
         ...book.data,
         rating

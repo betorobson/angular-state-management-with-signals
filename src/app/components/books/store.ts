@@ -8,19 +8,18 @@ import { STATE_BASE_ENTITY, StateStoreBase, StateStoreEntityActions, StateStoreE
 })
 export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksModel, StateBookEntityCustomMetaData> {
 
+
   constructor(){
 
     super();
 
+    this.initState({
+      lastUpdate: 0,
+    });
+
     this.initActions(
       inject(StateBooksServiceEffects)
     );
-  }
-
-  getInitialStateStore(){
-    return {
-      lastUpdate: 0,
-    }
   }
 
   ///////////////////// SELECTORS

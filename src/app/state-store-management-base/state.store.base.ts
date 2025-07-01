@@ -95,11 +95,11 @@ export abstract class StateStoreBase<
     },
   }
 
-  constructor(){
-    this.STATE.set(this.getInitialStateStore());
-  }
+  constructor(){}
 
-  protected abstract getInitialStateStore(): STATE_MODEL;
+  protected initState(INITIAL_STATE: STATE_MODEL){
+    this.STATE.set(INITIAL_STATE);
+  }
 
   protected initActions(effectsService?: StateEffectsBase<STATE_MODEL, ENTITY_MODEL>){
     if(effectsService){

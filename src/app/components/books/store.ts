@@ -63,15 +63,15 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
     },
 
     [StateBooksActions.SAVE_DATA]: () => {
+    },
+
+    [StateBooksActions.SAVE_DATA_SUCCESS]: () => {
       this.selectors.filterPendingBooks().map(
         book => {
           book.meta_data.custom.pending = false;
           this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
         }
       )
-    },
-
-    [StateBooksActions.SAVE_DATA_SUCCESS]: () => {
     },
 
     [StateBooksActions.SET_LAST_UPDATE]: (lastUpdate: number) => {
@@ -97,10 +97,6 @@ export class StateBooksServiceStore extends StateStoreBase<StateBooks, BooksMode
 
   updateBook(book: STATE_BASE_BOOK_ENTITY){
     this.entityActions[StateStoreEntityActions.UPDATE_ENTITY](book);
-    // if(book.meta_data.custom.pending){
-    // }else{
-    //   this.actions[StateBooksActions.ASYNC_UPDATE_ENTITY_API](book);
-    // }
   }
 
 }

@@ -39,22 +39,25 @@ import { APIServiceCounterGETResponse } from '../../api-services/counter.service
 })
 export class CounterStoreService extends StateStoreBase<StateCounterModel, any> {
 
-  protected override effects = inject(StateCounterServiceEffects);
-
-  protected override STATE = signal<StateCounterModel>({
-    count: 0,
-    message: ''
-  });
-
   constructor(){
+
     super();
-    this.init();
+
+    this.initState({
+      count: 0,
+      message: ''
+    });
+
+    this.initActions(
+      inject(StateCounterServiceEffects)
+    );
+
   }
 
   ///////////////////// SELECTORS
   selectors = {
-    count: computed(() => this.STATE().count),
-    message: computed(() => this.STATE().message),
+    count: computed(() => this.STATE_STORE().count),
+    message: computed(() => this.STATE_STORE().message),
   }
 
   ///////////////////// ACTIONS
@@ -62,25 +65,25 @@ export class CounterStoreService extends StateStoreBase<StateCounterModel, any> 
   override actions = {
 
     [StateCounterActions.INCREMENT]: () => {
-      this.STATE.update(state => ({...state, count: state.count + 1}));
+      this.updateStateStore(state => ({...state, count: state.count + 1}));
     },
 
     [StateCounterActions.DECREMENT]: () => {
-      this.STATE.update(state => ({...state, count: state.count - 1}));
+      this.updateStateStore(state => ({...state, count: state.count - 1}));
     },
 
     [StateCounterActions.RESET]: () => {
-      this.STATE.update(state => ({...state, count: 0}));
+      this.updateStateStore(state => ({...state, count: 0}));
     },
 
     [StateCounterActions.GET_API]: (count: number) => {},
 
     [`${StateCounterActions.GET_API}:SUCCESS`]: (response: APIServiceCounterGETResponse) => {
-      this.STATE.update(state => ({...state, message: response.message}));
+      this.updateStateStore(state => ({...state, message: response.message}));
     },
 
     [`${StateCounterActions.GET_API}:ERROR`]: (error: ErrorEvent) => {
-      this.STATE.update(state => ({...state, message: error.message}));
+      this.updateStateStore(state => ({...state, message: error.message}));
     },
 
   }
@@ -105,7 +108,6 @@ Exemplo de effects enviando o dado para o servidor de forma assíncrona e depois
 ```ts
 // effects.ts
 import { Injectable, inject} from '@angular/core';
-import { StateAuthorsServiceStore } from '../authors/store';
 import { StateEffectsBase } from '../../state-store-management-base/state.effects.base';
 import { CounterStoreService, StateCounterActions, StateCounterModel } from './store';
 import { APIServiceCounter } from '../../api-services/counter.service';
@@ -116,7 +118,6 @@ import { APIServiceCounter } from '../../api-services/counter.service';
 export class StateCounterServiceEffects extends StateEffectsBase<StateCounterModel, any> {
 
   protected override stateStoreReference: CounterStoreService;
-  private stateAuthorsServiceStore = inject(StateAuthorsServiceStore);
 
   private apiServiceCounter = inject(APIServiceCounter);
 
@@ -133,17 +134,16 @@ export class StateCounterServiceEffects extends StateEffectsBase<StateCounterMod
 
     this.registerEffect(
       StateCounterActions.GET_API,
-      (count: number) => {
-        this.runEffectAsyncPipe(
-          StateCounterActions.GET_API,
-          this.apiServiceCounter.get(count)
-        );
-      }
+      (count: number) => this.apiServiceCounter.get(count).subscribe(
+        result => this.stateStoreReference.actions[`${StateCounterActions.GET_API}:SUCCESS`](result),
+        error => this.stateStoreReference.actions[`${StateCounterActions.GET_API}:ERROR`](error)
+      )
     );
 
   }
 
 }
+
 
 ```
 
@@ -185,7 +185,6 @@ export class AppCounterComponent {
   }
 
 }
-
 
 ```
 Esse exemplo simples mostra como a arquitetura baseada em signals e uma StateStoreBase pode fornecer uma estrutura leve, intuitiva e eficaz para gerenciar estado sem a complexidade de bibliotecas como NgRX.
